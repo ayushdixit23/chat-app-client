@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import NextAuthProvider from "@/components/providers/session-provider";
+import { ToastContainer } from "react-toastify";
 
 export const metadata: Metadata = {
   title: "Lets Chat",
@@ -15,15 +17,18 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={` antialiased`}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="light"
-          //  defaultTheme="dark"
-          enableSystem
-          disableTransitionOnChange
-        >
-          {children}
-        </ThemeProvider>
+        <NextAuthProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="light"
+            //  defaultTheme="dark"
+            enableSystem
+            disableTransitionOnChange
+          >
+             <ToastContainer />
+            {children}
+          </ThemeProvider>
+        </NextAuthProvider>
       </body>
     </html>
   );
