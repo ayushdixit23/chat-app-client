@@ -1,13 +1,7 @@
-
-
+"use client"
 import React from 'react';
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { MessageCircle, Send } from "lucide-react";
-// import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-
 
 const FloatingEmoji = ({ emoji, position, gradient }: { emoji: string; position: string; gradient: string }) => {
     return (
@@ -47,7 +41,7 @@ export default function AuthLayout({
 
 
             <Card className="w-full max-w-md relative backdrop-blur-md bg-white/80 dark:bg-[#0d0d0d] border-none shadow-xl rounded-3xl overflow-hidden">
-                <div className="p-4 py-8 sm:p-8">
+                <div className="p-4 py-7 sm:p-7">
                     {/* Fun Header */}
                     <div className="text-center mb-8">
                         <div className="w-12 h-12 sm:w-20 sm:h-20 bg-gradient-to-tr from-blue-500 to-cyan-500 rounded-2xl mx-auto mb-4 relative transform rotate-45">

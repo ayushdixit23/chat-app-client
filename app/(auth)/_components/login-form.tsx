@@ -21,7 +21,7 @@ import { toast } from "react-toastify";
 import { errorHandler } from "@/app/utils/helper";
 import { DEFAULT_REDIRECT_PATH } from "@/app/utils/constants";
 import { useRouter } from "next/navigation";
-import { signIn } from "next-auth/react";
+import Link from "next/link";
 
 const loginSchema = z.object({
   email: z
@@ -45,8 +45,8 @@ const Login = () => {
   const form = useForm<FormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: "",
-      password: "",
+      email: "fsayush100@gmail.com",
+      password: "ayushdixit23",
     },
   });
 
@@ -65,8 +65,7 @@ const Login = () => {
 
       router.push(DEFAULT_REDIRECT_PATH);
     } catch (error) {
-      // Handle different error scenarios
-      console.log(error);
+      errorHandler(error)
     } finally {
       setLoading(false);
     }
@@ -75,16 +74,7 @@ const Login = () => {
   const logInWithGoogle = async () => {
     setGoogleLoading(true);
     try {
-      // const res = await signGoogleServer();
-
-      // if (res?.error) {
-      //   toast.error(res?.error.split(".")[0]);
-      //   return;
-      // }
-
-          await signIn("google", {
-            callbackUrl: DEFAULT_REDIRECT_PATH,
-          });
+      await signGoogleServer();
 
       toast.success("Login Successfull!");
     } catch (error: unknown) {
@@ -99,7 +89,7 @@ const Login = () => {
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="flex flex-col gap-4"
+          className="flex flex-col gap-4 p-1"
         >
           <FormField
             control={form.control}
@@ -140,9 +130,8 @@ const Login = () => {
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.95 }}
             disabled={googleLoading || loading}
-            className={`w-full mt-2 flex justify-center text-white items-center gap-2 h-12 gradient-bg gradient-bg:hover rounded-xl font-medium text-lg ${
-              loading || googleLoading ? "opacity-70 cursor-not-allowed" : ""
-            }`}
+            className={`w-full mt-2 flex justify-center text-white items-center gap-2 h-12 gradient-bg gradient-bg:hover rounded-xl font-medium text-lg ${loading || googleLoading ? "opacity-70 cursor-not-allowed" : ""
+              }`}
             type="submit"
           >
             {loading ? "Loading..." : "Log In"}
@@ -172,6 +161,16 @@ const Login = () => {
           </>
         )}
       </motion.button>
+
+      <p className="text-sm font-light mt-6 text-white text-center">
+        Don’t have an account yet?{" "}
+        <Link
+          href="/signup"
+          className="font-medium text-primary-600 hover:underline dark:text-primary-500"
+        >
+          Sign Up
+        </Link>
+      </p>
     </>
   );
 };

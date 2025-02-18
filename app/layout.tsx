@@ -20,8 +20,8 @@ export default function RootLayout({
         <NextAuthProvider>
           <ThemeProvider
             attribute="class"
-            defaultTheme="light"
-            //  defaultTheme="dark"
+            // defaultTheme="light"
+             defaultTheme="dark"
             enableSystem
             disableTransitionOnChange
           >
