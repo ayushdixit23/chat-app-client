@@ -19,8 +19,6 @@ import { CiLogin } from "react-icons/ci";
 import { handleCredentialLogin, signGoogleServer } from "@/actions/auth";
 import { toast } from "react-toastify";
 import { errorHandler } from "@/app/utils/helper";
-import { DEFAULT_REDIRECT_PATH } from "@/app/utils/constants";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 const loginSchema = z.object({
@@ -40,7 +38,6 @@ export type FormValues = z.infer<typeof loginSchema>;
 const Login = () => {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
-  const router = useRouter();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(loginSchema),
@@ -63,7 +60,7 @@ const Login = () => {
 
       toast.success("Login Successfull!");
 
-      router.push(DEFAULT_REDIRECT_PATH);
+      window.location.reload()
     } catch (error) {
       errorHandler(error)
     } finally {
