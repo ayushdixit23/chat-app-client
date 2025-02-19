@@ -28,3 +28,16 @@ declare module "next-auth/jwt" {
     accessToken: string
   }
 }
+
+
+export type User = {
+  _id: string
+  id: string
+  fullName: string
+  userName: string
+  profilePic: string
+  email: string
+  bio: string
+  friends: string[]
+  sentFriendRequests: string[]
+}

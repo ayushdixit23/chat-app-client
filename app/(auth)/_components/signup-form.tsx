@@ -245,7 +245,7 @@ export default function Signup() {
 
 
 
-            <p className="text-sm font-light mt-6 text-white text-center">
+            <p className="text-sm font-light mt-6 dark:text-white text-center">
                 Already have an account ?{" "}
                 <Link
                     href="/login"

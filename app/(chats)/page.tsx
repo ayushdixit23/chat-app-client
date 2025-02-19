@@ -14,29 +14,39 @@
 // }
 "use client"
 import React, { useState } from 'react';
-import { Search, Send, Home, MessageSquare, Users, Settings, LogOut, Menu, X } from 'lucide-react';
-import Sidebar from '@/components/Sidebar';
+import { Search, Home, MessageSquare, Users, Settings, LogOut, Menu, X } from 'lucide-react';
+import { useSession } from 'next-auth/react';
 
 const ChatInterface = () => {
   const [message, setMessage] = useState('');
-  const [isSidebarOpen, setSidebarOpen] = useState(true);
   const [activeNav, setActiveNav] = useState('messages');
-  
+  const { data } = useSession()
+
+  // useEffect(() => {
+  //   if (data?.user) {
+  //     axios.get(`${API}/verify`, {
+  //       headers: {
+  //         "Authorization": `Bearer ${data?.user.accessToken}`
+  //       }
+  //     })
+  //   }
+  // }, [data])
+
   const users = [
-    { 
-      id: 1, 
-      name: 'John Doe', 
-      lastMessage: 'Hey, how are you?', 
-      time: '10:30 AM', 
+    {
+      id: 1,
+      name: 'John Doe',
+      lastMessage: 'Hey, how are you?',
+      time: '10:30 AM',
       unread: 2,
       image: '/api/placeholder/40/40',
       status: 'online'
     },
-    { 
-      id: 2, 
-      name: 'Jane Smith', 
-      lastMessage: 'See you tomorrow!', 
-      time: '9:45 AM', 
+    {
+      id: 2,
+      name: 'Jane Smith',
+      lastMessage: 'See you tomorrow!',
+      time: '9:45 AM',
       unread: 0,
       image: '/api/placeholder/40/40',
       status: 'offline'
@@ -44,19 +54,19 @@ const ChatInterface = () => {
   ];
 
   const messages = [
-    { 
-      id: 1, 
-      text: 'Hey, how are you?', 
-      sender: 'John Doe', 
-      time: '10:30 AM', 
+    {
+      id: 1,
+      text: 'Hey, how are you?',
+      sender: 'John Doe',
+      time: '10:30 AM',
       isSent: false,
       image: '/api/placeholder/40/40'
     },
-    { 
-      id: 2, 
-      text: 'I\'m good, thanks! How about you?', 
-      sender: 'You', 
-      time: '10:31 AM', 
+    {
+      id: 2,
+      text: 'I\'m good, thanks! How about you?',
+      sender: 'You',
+      time: '10:31 AM',
       isSent: true,
       image: '/api/placeholder/40/40'
     },
@@ -72,15 +82,15 @@ const ChatInterface = () => {
   return (
     <div className="flex w-full bg-gray-50">
       {/* Navigation Sidebar */}
-  
+
       {/* Users List */}
       <div className="w-[350px] bg-white border-r border-gray-200 flex flex-col">
         <div className="p-4 border-b border-gray-200">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-gray-800">Messages</h2>
-            <button 
+            <button
               className="lg:hidden p-2 hover:bg-gray-100 rounded-lg"
-              onClick={() => setSidebarOpen(!isSidebarOpen)}
+
             >
               <Menu className="h-6 w-6" />
             </button>
@@ -94,15 +104,14 @@ const ChatInterface = () => {
             <Search className="absolute left-2 top-2.5 h-5 w-5 text-gray-400" />
           </div>
         </div>
-        
+
         <div className="overflow-y-auto flex-1">
           {users.map(user => (
             <div key={user.id} className="flex items-center p-4 hover:bg-gray-50 cursor-pointer border-b border-gray-100">
               <div className="relative">
                 <img src={user.image} alt={user.name} className="w-12 h-12 rounded-full" />
-                <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${
-                  user.status === 'online' ? 'bg-green-500' : 'bg-gray-400'
-                }`} />
+                <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${user.status === 'online' ? 'bg-green-500' : 'bg-gray-400'
+                  }`} />
               </div>
               <div className="ml-4 flex-1">
                 <div className="flex justify-between">
@@ -124,8 +133,8 @@ const ChatInterface = () => {
       </div>
 
       {/* Chat Area */}
-      <div className="flex-1  flex flex-col">
-        {/* Chat Header */}
+      {/* <div className="flex-1  flex flex-col">
+       
         <div className="p-4 bg-white border-b border-gray-200">
           <div className="flex items-center">
             <img src="/api/placeholder/40/40" alt="John Doe" className="w-10 h-10 rounded-full" />
@@ -147,8 +156,7 @@ const ChatInterface = () => {
             </div>
           </div>
         </div>
-
-        {/* Messages Area */}
+      
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {messages.map(msg => (
             <div key={msg.id} className={`flex ${msg.isSent ? 'justify-end' : 'justify-start'}`}>
@@ -167,7 +175,6 @@ const ChatInterface = () => {
           ))}
         </div>
 
-        {/* Message Input */}
         <div className="p-4 bg-white border-t border-gray-200">
           <div className="flex items-center space-x-2">
             <input
@@ -185,6 +192,11 @@ const ChatInterface = () => {
             </button>
           </div>
         </div>
+      </div> */}
+
+      <div className="text-center flex flex-1 justify-center items-center flex-col gap-4">
+        <h2 className="text-2xl font-bold text-gray-700">Select a conversation</h2>
+        <p className="text-gray-500">Choose a chat from the list to start messaging.</p>
       </div>
     </div>
   );
