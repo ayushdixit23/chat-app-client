@@ -4,6 +4,7 @@ import { ThemeProvider } from "@/components/providers/theme-provider";
 import NextAuthProvider from "@/components/providers/session-provider";
 import { ToastContainer } from "react-toastify";
 import ReactQueryProvider from "@/components/providers/react-query-provider";
+import { SocketContextProvider } from "@/components/providers/socket";
 
 export const metadata: Metadata = {
   title: "Lets Chat",
@@ -19,18 +20,21 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={` antialiased`}>
         <NextAuthProvider>
-          <ReactQueryProvider>
-            <ThemeProvider
-              attribute="class"
-              defaultTheme="light"
-              // defaultTheme="dark"
-              enableSystem
-              disableTransitionOnChange
-            >
-              <ToastContainer />
-              {children}
-            </ThemeProvider>
-          </ReactQueryProvider>
+          <SocketContextProvider>
+            <ReactQueryProvider>
+              <ThemeProvider
+                attribute="class"
+                defaultTheme="light"
+                // defaultTheme="dark"
+                enableSystem
+                disableTransitionOnChange
+              >
+                <ToastContainer />
+                {children}
+              </ThemeProvider>
+            </ReactQueryProvider>
+          </SocketContextProvider>
+
         </NextAuthProvider>
       </body>
     </html>
