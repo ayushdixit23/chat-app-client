@@ -1,17 +1,19 @@
 "use client";
 import { getPrivateChat } from "@/actions/chats";
+import { useSocketContext } from "@/components/providers/socket";
 import { useQuery } from "@tanstack/react-query";
 import { Search, Send, Users } from "lucide-react";
-import React from "react";
+import React, { useState } from "react";
 
 const PrivateChat = ({ id }: { id: string }) => {
   let messages: any = [];
-  let message = "";
+  const [message, setMessage] = useState("");
   const { data, error, isError, isLoading } = useQuery({
     queryKey: ["getChat", id],
     queryFn: ({ queryKey }) => getPrivateChat(queryKey[1]),
     enabled: !!id,
   });
+  const { socket } = useSocketContext();
 
   if (isLoading) {
     return (
@@ -28,6 +30,16 @@ const PrivateChat = ({ id }: { id: string }) => {
       </>
     );
   }
+
+  const sendMessage = () => {
+    if (!message) return;
+    try {
+      socket?.emit(`message`, message);
+      setMessage("");
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
     <div className="flex-1  flex flex-col">
@@ -106,13 +118,13 @@ const PrivateChat = ({ id }: { id: string }) => {
           <input
             type="text"
             value={message}
-            // onChange={(e) => setMessage(e.target.value)}
+            onChange={(e) => setMessage(e.target.value)}
             placeholder="Type a message..."
             className="flex-1 p-3 border light:border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 dark:bg-transparent bg-gray-50"
           />
           <button
             className="p-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none"
-            // onClick={() => setMessage("")}
+            onClick={sendMessage}
           >
             <Send className="h-5 w-5" />
           </button>

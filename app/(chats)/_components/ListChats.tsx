@@ -19,6 +19,7 @@ const ListChats = () => {
   if (isError) {
     return <div>{error.message}</div>;
   }
+  
   return (
     <div className="overflow-y-auto flex-1">
     {users?.users.map((user:any) => (
