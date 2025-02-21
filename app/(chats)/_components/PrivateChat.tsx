@@ -1,135 +1,149 @@
 "use client";
 import { getPrivateChat } from "@/actions/chats";
+import { formatDate, generateRandomChatId } from "@/app/utils/helper";
 import { useSocketContext } from "@/components/providers/socket";
-import { useQuery } from "@tanstack/react-query";
-import { Search, Send, Users } from "lucide-react";
-import React, { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Lock } from "lucide-react";
+import { useSession } from "next-auth/react";
+import React, { useEffect } from "react";
+import InputText from "./InputText";
+import MessageBody from "./MessageBody";
+import MessageHeader from "./MessageHeader";
 
 const PrivateChat = ({ id }: { id: string }) => {
-  let messages: any = [];
-  const [message, setMessage] = useState("");
+  const { data: user } = useSession();
   const { data, error, isError, isLoading } = useQuery({
     queryKey: ["getChat", id],
     queryFn: ({ queryKey }) => getPrivateChat(queryKey[1]),
     enabled: !!id,
   });
+  const queryClient = useQueryClient();
   const { socket } = useSocketContext();
 
-  if (isLoading) {
-    return (
-      <>
-        <div>Loading...</div>
-      </>
-    );
-  }
+  useEffect(() => {
+    // console.log(`Rendered`)
+    socket?.on("message", (socketData) => {
+      console.log(
+        socketData?.conversationId === id,
+        id,
+        socketData.conversationId,
+        socketData
+      );
+      if (socketData?.conversationId === id) {
+        queryClient.setQueryData(["getChat", id], (oldData: any) => {
+          if (!oldData) return oldData;
+          const formattedDate = formatDate(socketData.createdAt);
+          return {
+            ...oldData,
+            conversation: {
+              ...oldData.conversation,
+              messages: {
+                ...oldData.conversation.messages,
+                [formattedDate]: [
+                  ...(oldData?.conversation?.messages?.[formattedDate] || []),
+                  socketData,
+                ],
+              },
+            },
+          };
+        });
+      }
+    });
+  }, [socket, id]);
 
-  if (isError) {
-    return (
-      <>
-        <div>{error.message}</div>
-      </>
-    );
-  }
-
-  const sendMessage = () => {
+  const sendMessage = (
+    message: string,
+    setMessage: React.Dispatch<React.SetStateAction<string>>
+  ) => {
     if (!message) return;
     try {
-      socket?.emit(`message`, message);
+      const messageToSend = {
+        mesId: generateRandomChatId(),
+        senderId: {
+          _id: user?.user.id,
+          fullName: user?.user.fullName,
+          profilePic: user?.user.profilePic,
+        },
+        conversationId: id,
+        text: message,
+        roomId: data?.conversation.otherUser._id,
+        createdAt: new Date(Date.now()),
+      };
+
+      // Function to format date as "DD/MM/YYYY"
+
+      queryClient.setQueryData(["getChat", id], (oldData: any) => {
+        if (!oldData) return oldData;
+
+        const formattedDate = formatDate(messageToSend.createdAt);
+
+        return {
+          ...oldData,
+          conversation: {
+            ...oldData.conversation,
+            messages: {
+              ...oldData.conversation.messages,
+              [formattedDate]: [
+                ...(oldData?.conversation?.messages?.[formattedDate] || []),
+                messageToSend,
+              ],
+            },
+          },
+        };
+      });
+
+      socket?.emit(`message`, messageToSend);
       setMessage("");
     } catch (error) {
       console.log(error);
     }
   };
 
-  return (
-    <div className="flex-1  flex flex-col">
-      <div className="p-4 bg-white dark:bg-[#0d0d0d] dark:text-white border-b light:border-gray-200">
-        <div className="flex items-center">
-          <div className="w-10 h-10 rounded-full overflow-hidden">
-            <img
-              src={data?.conversation.otherUser.profilePic}
-              alt="John Doe"
-              className="w-full h-full object-cover"
-            />
-          </div>
+  if (isLoading) return <div>Loading...</div>;
+  if (isError) return <div>{error.message}</div>;
 
-          <div className="ml-4 flex-1">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="font-semibold dark:text-white text-gray-900">
-                  {data?.conversation.otherUser.fullName}
-                </h2>
-                <p className="text-sm text-green-500">Online</p>
-              </div>
-              <div className="flex items-center space-x-2">
-                <button className="p-2 hover:bg-gray-100 rounded-lg">
-                  <Search className="h-5 w-5 text-gray-500" />
-                </button>
-                <button className="p-2 hover:bg-gray-100 rounded-lg">
-                  <Users className="h-5 w-5 text-gray-500" />
-                </button>
-              </div>
-            </div>
+  return (
+    <div className="flex flex-col flex-1 h-full">
+      {/* Header */}
+      <MessageHeader data={data} />
+
+      {/* Messages */}
+      <div className="flex-1 w-full overflow-y-auto">
+        <div className="flex items-center justify-center p-4 text-center">
+          <div className="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 px-4 py-4 rounded-full">
+            <Lock className="h-3 w-3" />
+            <span className="text-xs">Messages are end-to-end encrypted</span>
           </div>
         </div>
-      </div>
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map((msg: any) => (
-          <div
-            key={msg.id}
-            className={`flex ${msg.isSent ? "justify-end" : "justify-start"}`}
-          >
-            <div
-              className={`flex ${
-                msg.isSent ? "flex-row-reverse" : "flex-row"
-              } items-end space-x-2`}
-            >
-              {!msg.isSent && (
-                <img
-                  src={msg.image}
-                  alt={msg.sender}
-                  className="w-8 h-8 rounded-full"
-                />
-              )}
-              <div
-                className={`max-w-[70%] rounded-lg p-3 ${
-                  msg.isSent
-                    ? "bg-blue-500 text-white ml-2"
-                    : "bg-white dark:bg-transparent dark:text-white border text-gray-900 mr-2"
-                }`}
-              >
-                <p>{msg.text}</p>
-                <p
-                  className={`text-xs mt-1 ${
-                    msg.isSent ? "text-blue-100" : "text-gray-500"
-                  }`}
-                >
-                  {msg.time}
+        <div className="min-h-full p-4 flex flex-col space-y-3">
+          {Object.keys(data?.conversation?.messages).map((date) => (
+            <div key={date} className="flex flex-col space-y-4">
+              <div className="text-center flex justify-center items-center ">
+                <p className="bg-gray-100  px-4 py-2 rounded-xl dark:bg-gray-800">
+                  {date}
                 </p>
               </div>
-            </div>
-          </div>
-        ))}
-      </div>
+              {data?.conversation?.messages[date].map(
+                (msg: any, index: number) => {
+                  const isOwnMessage = msg.senderId._id === user?.user.id;
 
-      <div className="p-4 bg-white dark:bg-[#0d0d0d] dark:text-white border-t light:border-gray-200">
-        <div className="flex items-center space-x-2">
-          <input
-            type="text"
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            placeholder="Type a message..."
-            className="flex-1 p-3 border light:border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 dark:bg-transparent bg-gray-50"
-          />
-          <button
-            className="p-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none"
-            onClick={sendMessage}
-          >
-            <Send className="h-5 w-5" />
-          </button>
+                  return (
+                    <MessageBody
+                      isOwnMessage={isOwnMessage}
+                      index={index}
+                      msg={msg}
+                    />
+                  );
+                }
+              )}
+            </div>
+          ))}
         </div>
       </div>
+
+      {/* Input */}
+      <InputText sendMessage={sendMessage} />
     </div>
   );
 };

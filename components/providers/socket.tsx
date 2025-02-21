@@ -36,23 +36,27 @@ export const SocketContextProvider: React.FC<SocketContextProviderProps> = ({
     const { data } = useSession()
 
     useEffect(() => {
-        const url = `http://localhost:7003`;
-        const newSocket: Socket | null = io(url, {
-            auth: { id: data?.user.id }, // Pass authentication info
-            reconnectionAttempts: 100,
-            reconnectionDelay: 3000,
-            reconnection: true,
-            autoConnect: true,
-            transports: ["websocket"], // Ensure WebSocket is used
-        });
-        setSocket(newSocket);
-        console.log("Connecting...", newSocket.connected);
+        if (data?.user.accessToken) {
+            const url = `http://localhost:8082`;
+            // const url = "http://localhost:7003"
+            const newSocket: Socket | null = io(url, {
+                auth: { token: data?.user.accessToken }, // Pass authentication info
+                reconnectionAttempts: 100,
+                reconnectionDelay: 3000,
+                reconnection: true,
+                autoConnect: true,
+                transports: ["websocket"], // Ensure WebSocket is used
+            });
+            setSocket(newSocket);
+            console.log("Connecting...", newSocket.connected);
 
-        // Cleanup on component unmount or when dependencies change
-        return () => {
-            newSocket?.disconnect();
-        };
-    }, []);
+            // Cleanup on component unmount or when dependencies change
+            return () => {
+                newSocket?.disconnect();
+            };
+        }
+
+    }, [data?.user.accessToken]);
 
     return (
         <SocketContext.Provider value={{ socket }}>
