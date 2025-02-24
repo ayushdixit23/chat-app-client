@@ -26,8 +26,6 @@ export const getPrivateChat = async (conversationId: string) => {
                 Authorization: `Bearer ${data?.user.accessToken}`,
             },
         });
-
-        console.log(`data fetched`, JSON.stringify(res.data));
         return res.data;
     } catch (error) {
         console.log(error);

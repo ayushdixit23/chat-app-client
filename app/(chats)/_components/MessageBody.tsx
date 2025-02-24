@@ -2,16 +2,13 @@ import React from "react";
 
 const MessageBody = ({
   isOwnMessage,
-  index,
   msg,
 }: {
   isOwnMessage: any;
-  index: any;
   msg: any;
 }) => {
   return (
     <div
-      key={index}
       className={`flex items-end ${
         isOwnMessage ? "justify-end" : "justify-start"
       } space-x-2`}

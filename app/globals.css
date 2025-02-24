@@ -74,3 +74,14 @@
 .gradient-bg:hover {
   background: linear-gradient(to right, #3b82f6, #22d3ee); /* hover:to-cyan-400 */
 }
+
+
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}

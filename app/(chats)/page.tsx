@@ -1,4 +1,3 @@
-
 import React from "react";
 import {
   Search,
@@ -7,12 +6,11 @@ import {
 import PrivateChat from "./_components/PrivateChat";
 import ListChats from "./_components/ListChats";
 
-const Page = ({
+const Page =async ({
   searchParams,
 }: {
   searchParams?: { id?: string;[key: string]: string | string[] | undefined };
 }) => {
-
   return (
     <div className="flex w-full bg-gray-50 dark:bg-[#0d0d0d] dark:text-white">
 

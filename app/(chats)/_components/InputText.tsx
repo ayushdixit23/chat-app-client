@@ -1,12 +1,24 @@
-import { Send } from 'lucide-react';
-import React, { useState } from 'react'
+import { Send } from "lucide-react";
+import React, { useState } from "react";
+import DropdownButton from "./DropdownButton";
+import { value } from "@/app/zustand/stores/message";
 
-const InputText = ({ sendMessage }: { sendMessage: (message: string, setMessage: React.Dispatch<React.SetStateAction<string>>) => void }) => {
-    const [message, setMessage] = useState("")
+const InputText = ({
+    sendMessage,
+   
+}: {
+    sendMessage: (
+        message: string,
+        setMessage: React.Dispatch<React.SetStateAction<string>>
+    ) => void;
+   
+}) => {
+    const [message, setMessage] = useState("");
 
     return (
-        <div className="p-4 bg-white dark:bg-[#0d0d0d] dark:text-white border-t light:border-gray-200">
-            <div className="flex items-center space-x-2">
+        <div className="p-3 flex items-center gap-2 bg-white dark:bg-[#0d0d0d] dark:text-white border-t light:border-gray-200">
+            <DropdownButton />
+            <div className="flex flex-1 items-center space-x-2">
                 <input
                     type="text"
                     value={message}
@@ -27,7 +39,7 @@ const InputText = ({ sendMessage }: { sendMessage: (message: string, setMessage:
                 </button>
             </div>
         </div>
-    )
-}
+    );
+};
 
-export default InputText
+export default InputText;
