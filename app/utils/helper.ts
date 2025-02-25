@@ -33,3 +33,9 @@ export const formatDate = (dateString: Date) => {
     .toString()
     .padStart(2, "0")}/${date.getFullYear()}`;
 };
+
+export const formatFileSize = (bytes: number) => {
+  if (bytes < 1024) return bytes + " B";
+  else if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+  else return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+};

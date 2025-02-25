@@ -11,9 +11,6 @@ const InputText = ({
     ) => void;
 }) => {
     const [message, setMessage] = useState("");
-
-
-
     return (
         <div className="p-3 flex items-center gap-2 bg-white dark:bg-[#0d0d0d] dark:text-white border-t light:border-gray-200">
             <DropdownButton />

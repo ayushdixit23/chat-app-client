@@ -3,9 +3,9 @@ import React from "react";
 import CircularProgress from "./CircularProgress";
 
 const UploadImage = ({ msg }: { msg: any }) => (
-  <div className="space-y-2 container w-[300px] h-[250px]">
+  <div className="space-y-2 w-full max-w-[350px]">
     {msg.uploadProgress !== undefined && msg.uploadProgress < 100 ? (
-      <div className="relative rounded-md w-full h-[250px] flex items-center justify-center">
+      <div className="relative rounded-md w-full aspect-video flex items-center justify-center">
         {/* Image Preview */}
         {msg.imageUrl && (
           <img
@@ -25,7 +25,7 @@ const UploadImage = ({ msg }: { msg: any }) => (
         <img
           src={msg.imageUrl}
           alt="Uploaded"
-          className="w-full max-w-sm rounded-md"
+          className="w-full rounded-md"
         />
       </div>
     )}
@@ -73,15 +73,15 @@ const UploadDocument = ({ msg, isOwnMessage }: { msg: any, isOwnMessage: boolean
 
 
 const UploadVideo = ({ msg }: { msg: any }) => (
-  <div className="space-y-2 w-[300px] h-[250px]">
+  <div className="space-y-2 w-full max-w-[350px]">
     {msg.uploadProgress !== undefined && msg.uploadProgress < 100 ? (
-      <div className="relative rounded-md w-full h-full flex items-center justify-center backdrop:blur-sm">
+      <div className="relative rounded-md w-full aspect-video flex items-center justify-center">
         {/* Video Preview */}
         {msg.videoUrl && (
           <video
             src={msg.videoUrl}
             poster={msg.videoUrl}
-            className="w-full h-full object-cover rounded-md "
+            className="w-full h-full object-cover rounded-md"
             muted
             loop
           />
@@ -93,11 +93,11 @@ const UploadVideo = ({ msg }: { msg: any }) => (
       </div>
     ) : (
       // Display final uploaded video
-      <div className="relative w-full h-full">
+      <div className="relative w-full">
         <video
           src={msg.videoUrl}
           poster={msg.videoUrl}
-          className="w-full h-full object-cover rounded-md"
+          className="w-full rounded-md"
           controls
         />
       </div>
@@ -113,8 +113,6 @@ const MessageBody = ({
   isOwnMessage: boolean;
   msg: any;
 }) => {
-  console.log(msg);
-
   return (
     <div
       className={`flex items-end ${isOwnMessage ? "justify-end" : "justify-start"
