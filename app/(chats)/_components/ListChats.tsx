@@ -63,7 +63,7 @@ const ListChats = () => {
         style={{ display: "flex", flexDirection: "column" }} // Keeps the scroll behavior correct
       >
         {chatData?.users.map((user: any) => (
-          <ListMiniComponent user={user} key={user._id} />
+          <ListMiniComponent user={user} key={user._id} data={data}/>
         ))}
       </InfiniteScroll>
     </div>
