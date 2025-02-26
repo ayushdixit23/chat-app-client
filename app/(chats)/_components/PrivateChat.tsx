@@ -3,6 +3,7 @@ import { getPrivateChat } from "@/actions/chats";
 import {
   errorHandler,
   formatDate,
+  formatFileSize,
   generateRandomChatId,
 } from "@/app/utils/helper";
 import { useSocketContext } from "@/components/providers/socket";
@@ -21,7 +22,6 @@ import InfiniteScroll from "react-infinite-scroll-component";
 import Preview from "./Preview";
 import InfiniteLoader from "./InfiniteLoader";
 
-
 const PrivateChat = ({ id }: { id: string }) => {
   const queryClient = useQueryClient();
   const { data: user } = useSession();
@@ -35,7 +35,7 @@ const PrivateChat = ({ id }: { id: string }) => {
     (state) => state
   );
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [isFetching,setIsFetching]  = useState(false)
+  const [isFetching, setIsFetching] = useState(false);
 
   const getLastMessageId = (messages: any) => {
     let oldestMessage: any = null;
@@ -53,10 +53,10 @@ const PrivateChat = ({ id }: { id: string }) => {
   };
 
   const fetchOlderMessages = async () => {
-    if (!data?.conversation?.messages|| isFetching) return;
+    if (!data?.conversation?.messages || isFetching) return;
 
     try {
-      setIsFetching(true)
+      setIsFetching(true);
       const lastMessageId = getLastMessageId(data.conversation.messages);
       const res = await axios.get(
         `${API}/chats/getOlderMessages/${id}?lastMessageId=${lastMessageId}`,
@@ -91,7 +91,7 @@ const PrivateChat = ({ id }: { id: string }) => {
             const [dayA, monthA, yearA] = a.split("/").map(Number);
             const [dayB, monthB, yearB] = b.split("/").map(Number);
             // @ts-ignore
-            return (new Date(yearA, monthA - 1, dayA) - new Date(yearB, monthB - 1, dayB));
+            return (new Date(yearA, monthA - 1, dayA) -new Date(yearB, monthB - 1, dayB));
           })
           .reduce((acc, date) => {
             acc[date] = mergedMessages[date];
@@ -109,8 +109,8 @@ const PrivateChat = ({ id }: { id: string }) => {
       });
     } catch (error) {
       console.error("Error fetching older messages:", error);
-    }finally{
-      setIsFetching(false)
+    } finally {
+      setIsFetching(false);
     }
   };
 
@@ -177,12 +177,10 @@ const PrivateChat = ({ id }: { id: string }) => {
   ) => {
     if (messageType === "text") {
       sendTextMessage(message, setMessage);
-    } else if (
-      messageType === "image" ||
-      messageType === "video" ||
-      messageType === "document"
-    ) {
+    } else if (messageType === "image" || messageType === "video") {
       sendMediaMessage();
+    } else if (messageType === "document") {
+      sendDocumentMessage();
     }
   };
 
@@ -305,11 +303,6 @@ const PrivateChat = ({ id }: { id: string }) => {
           videoUrl: URL.createObjectURL(media),
           uploadProgress: 0,
         }),
-        // ...(messageType === "document" && {
-        //   text: media.name,
-        //   fileSize: formatFileSize(media.size),
-        //   uploadProgress: 0,
-        // }),
       };
 
       // Add temp message to UI
@@ -449,13 +442,180 @@ const PrivateChat = ({ id }: { id: string }) => {
     }
   };
 
+  const sendDocumentMessage = async () => {
+    if (!media) return;
+
+    setMessageType("text");
+
+    try {
+      // Create a temporary message to show upload progress
+      const tempMessageId = generateRandomChatId();
+      const tempMessage = {
+        mesId: tempMessageId,
+        senderId: {
+          _id: user?.user.id,
+          fullName: user?.user.fullName,
+          profilePic: user?.user.profilePic,
+        },
+        type: messageType,
+        conversationId: id,
+        roomId: data?.conversation.otherUser._id,
+        createdAt: new Date(Date.now()),
+        document: {
+          url: URL.createObjectURL(media),
+          name: media.name,
+          size: formatFileSize(media.size),
+        },
+        uploadProgress: 0,
+      };
+
+      // Add temp message to UI
+      updateMessageCache(tempMessage);
+
+      // Generate presigned URL for upload
+      const response = await axios.post(
+        `${API}/chats/generate-presignedurl`,
+        {
+          key: media.name,
+          contentType: media.type,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${user?.user.accessToken}`,
+          },
+        }
+      );
+
+      const { signedUrl, key } = response.data;
+
+      // Start upload and track progress
+      const success = await uploadMediaToAws(media, signedUrl, (progress) => {
+        setUploadProgress(progress);
+
+        // Update the temporary message with current progress
+        queryClient.setQueryData(["getChat", id], (oldData: any) => {
+          if (!oldData) return oldData;
+
+          // Find and update the temp message with current progress
+          const updatedMessages = { ...oldData.conversation.messages };
+
+          for (const date in updatedMessages) {
+            updatedMessages[date] = updatedMessages[date].map((msg: any) => {
+              if (msg.mesId === tempMessageId) {
+                return { ...msg, uploadProgress: progress };
+              }
+              return msg;
+            });
+          }
+
+          return {
+            ...oldData,
+            conversation: {
+              ...oldData.conversation,
+              messages: updatedMessages,
+            },
+          };
+        });
+      });
+
+      if (success) {
+        const actualUrl = `${CHAT_MESSAGE_URL}${key}`;
+
+        // Create final message
+        const finalMessage = {
+          mesId: tempMessageId,
+          senderId: {
+            _id: user?.user.id,
+            fullName: user?.user.fullName,
+            profilePic: user?.user.profilePic,
+          },
+          type: messageType,
+          conversationId: id,
+          roomId: data?.conversation.otherUser._id,
+          createdAt: new Date(Date.now()),
+          document: {
+            url: actualUrl,
+            name: media.name,
+            size: formatFileSize(media.size),
+          },
+        };
+
+        // Replace the temporary message with the final one
+        queryClient.setQueryData(["getChat", id], (oldData: any) => {
+          if (!oldData) return oldData;
+
+          // Find and update the temp message
+          const updatedMessages = { ...oldData.conversation.messages };
+
+          for (const date in updatedMessages) {
+            updatedMessages[date] = updatedMessages[date].map((msg: any) => {
+              if (msg.mesId === tempMessageId) {
+                return finalMessage;
+              }
+              return msg;
+            });
+          }
+
+          return {
+            ...oldData,
+            conversation: {
+              ...oldData.conversation,
+              messages: updatedMessages,
+            },
+          };
+        });
+
+        // Send the message via socket
+        socket?.emit(`message`, finalMessage);
+      } else {
+        // Handle failed upload - remove the temporary message
+        queryClient.setQueryData(["getChat", id], (oldData: any) => {
+          if (!oldData) return oldData;
+
+          // Remove the failed message
+          const updatedMessages = { ...oldData.conversation.messages };
+
+          for (const date in updatedMessages) {
+            updatedMessages[date] = updatedMessages[date].filter(
+              (msg: any) => msg.mesId !== tempMessageId
+            );
+
+            // If the date has no messages, remove the date
+            if (updatedMessages[date].length === 0) {
+              delete updatedMessages[date];
+            }
+          }
+
+          return {
+            ...oldData,
+            conversation: {
+              ...oldData.conversation,
+              messages: updatedMessages,
+            },
+          };
+        });
+
+        console.error("Upload failed");
+      }
+
+      setMedia(null);
+
+      setUploadProgress(0);
+    } catch (error) {
+      errorHandler(error);
+      console.error("Error in media upload:", error);
+      setMedia(null);
+      setMessageType("text");
+    }
+  };
+
   if (isLoading) return <Loader />;
   if (isError) return <ErrorPage message={error.message} />;
 
   return (
     <div className="flex flex-col flex-1 h-full">
       {/* Header */}
-      <MessageHeader data={data} />
+      <MessageHeader data={data} socket={socket}/>
 
       {/* Messages */}
 
@@ -478,13 +638,9 @@ const PrivateChat = ({ id }: { id: string }) => {
               flexDirection: "column-reverse",
             }}
           >
-         
             <InfiniteScroll
-            // @ts-ignore
-            dataLength={Object.values(data?.conversation?.messages || {}).reduce((total: number, messages: any[]) => total + messages.length,
-                0
-              )
-            }    
+              // @ts-ignore
+              dataLength={Object.values(data?.conversation?.messages || {}).reduce((total: number, messages: any[]) => total + messages.length, 0)}
               next={fetchOlderMessages}
               style={{ display: "flex", flexDirection: "column-reverse" }} //To put endMessage and loader to the top.
               inverse={true}
@@ -534,7 +690,7 @@ const PrivateChat = ({ id }: { id: string }) => {
       </div>
 
       {/* Input */}
-      <InputText handleMessage={handleMessage} />
+      <InputText handleMessage={handleMessage} socket={socket} roomId={data?.conversation.otherUser._id} conversationId={id}/>
     </div>
   );
 };

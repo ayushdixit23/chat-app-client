@@ -31,11 +31,42 @@ const ListMiniComponent = ({ user, data }: { user: any; data: any }) => {
         </div>
         <div className="flex justify-between">
           <p className="text-xs mt-[4px] dark:text-white text-gray-500 truncate">
-            {user.lastMessage?.text
-              ? `${
-                  user.lastMessage.sender?._id === data.user.id ? "You: " : ""
-                }${user.lastMessage.text}`
-              : `Start Conversation with ${user.chatName?.slice(0, 5)}...`}
+            {user.lastMessage && user.lastMessage.type === "text" && (
+              <>
+                {user.lastMessage.text
+                  ? `${
+                      user.lastMessage.sender?._id === data.user.id
+                        ? "You: "
+                        : ""
+                    }${user.lastMessage.text}`
+                  : `Start Conversation with ${user.chatName?.slice(0, 5)}...`}
+              </>
+            )}
+
+            {!user.lastMessage.type && (
+              <>Start Conversation with ${user.chatName?.slice(0, 5)}...</>
+            )}
+
+            {user.lastMessage && user.lastMessage.type === "image" && (
+              <>
+                {user.lastMessage.sender?._id === data.user.id ? "You: " : ""}
+                sent an image
+              </>
+            )}
+
+            {user.lastMessage && user.lastMessage.type === "video" && (
+              <>
+                {user.lastMessage.sender?._id === data.user.id ? "You: " : ""}
+                sent a video
+              </>
+            )}
+
+            {user.lastMessage && user.lastMessage.type === "document" && (
+              <>
+                {user.lastMessage.sender?._id === data.user.id ? "You: " : ""}
+                sent a document
+              </>
+            )}
           </p>
           {user?.unread > 0 && (
             <span className="bg-blue-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">

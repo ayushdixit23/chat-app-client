@@ -17,7 +17,7 @@ const CircularProgress = ({ progress }: { progress: number }) => {
                     cy="50%"
                     r={radius}
                     strokeWidth="4"
-                    stroke="blue"
+                    stroke="white"
                     fill="transparent"
                     strokeDasharray={circumference}
                     strokeDashoffset={strokeDashoffset}
@@ -27,7 +27,7 @@ const CircularProgress = ({ progress }: { progress: number }) => {
             </svg>
 
             {/* Progress Text */}
-            <div className="absolute inset-0 flex items-center justify-center text-sm font-semibold text-blue-600">
+            <div className="absolute inset-0 flex items-center justify-center text-sm font-semibold text-white">
                 {progress}%
             </div>
         </div>

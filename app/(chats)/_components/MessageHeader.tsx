@@ -1,7 +1,30 @@
 import { Search, Users } from "lucide-react";
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { Socket } from "socket.io-client";
 
-const MessageHeader = ({ data }: { data: any }) => {
+const MessageHeader = ({
+  data,
+  socket,
+}: {
+  data: any;
+  socket: Socket | null;
+}) => {
+  const [isTyping, setIsTyping] = useState(false);
+
+  useEffect(() => {
+    socket?.on(`typing`, (socketData) => {
+      if (socketData?.conversationId === data?.conversation.conversationId) {
+        setIsTyping(true);
+      }
+    });
+
+    socket?.on("not-typing", (socketData) => {
+      if (socketData?.conversationId === data?.conversation.conversationId) {
+        setIsTyping(false);
+      }
+    });
+  }, [socket]);
+
   return (
     <div className="p-4 bg-white dark:bg-[#0d0d0d] dark:text-white border-b light:border-gray-200">
       <div className="flex items-center">
@@ -19,7 +42,9 @@ const MessageHeader = ({ data }: { data: any }) => {
               <h2 className="font-semibold dark:text-white text-gray-900">
                 {data?.conversation.otherUser.fullName}
               </h2>
-              <p className="text-sm text-green-500">Online</p>
+              <p className="text-sm text-green-500">
+                {isTyping ? "typing..." : "Online"}
+              </p>
             </div>
             <div className="flex items-center space-x-2">
               <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
