@@ -10,6 +10,8 @@ const MessageHeader = ({
   socket: Socket | null;
 }) => {
   const [isTyping, setIsTyping] = useState(false);
+  const chatName = data?.conversation.isGroup ? data?.conversation.groupName : data?.conversation.otherUser.fullName
+  const chatPic=data?.conversation.isGroup ? data?.conversation.groupPic : data?.conversation.otherUser.profilePic
 
   useEffect(() => {
     socket?.on(`typing`, (socketData) => {
@@ -30,8 +32,8 @@ const MessageHeader = ({
       <div className="flex items-center">
         <div className="w-10 h-10 rounded-full overflow-hidden">
           <img
-            src={data?.conversation.otherUser.profilePic}
-            alt={data?.conversation.otherUser.fullName}
+            src={chatPic}
+            alt={chatName}
             className="w-full h-full object-cover"
           />
         </div>
@@ -40,7 +42,7 @@ const MessageHeader = ({
           <div className="flex items-center justify-between">
             <div>
               <h2 className="font-semibold dark:text-white text-gray-900">
-                {data?.conversation.otherUser.fullName}
+                {chatName}
               </h2>
               <p className="text-sm text-green-500">
                 {isTyping ? "typing..." : "Online"}

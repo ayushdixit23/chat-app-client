@@ -1,17 +1,12 @@
 import React from "react";
 import {
   Search,
-  Menu,
+  Plus,
 } from "lucide-react";
-import PrivateChat from "./_components/PrivateChat";
-import ListChats from "./_components/ListChats";
-import NoChats from "./_components/NoChats";
+import ListGroups from "../_components/ListGroups";
+import Link from "next/link";
 
-const Page =async ({
-  searchParams,
-}: {
-  searchParams?: { id?: string;[key: string]: string | string[] | undefined };
-}) => {
+const Layout = ({ children }: { children: React.ReactNode }) => {
   return (
     <div className="flex w-full bg-gray-50 dark:bg-[#0d0d0d] dark:text-white">
 
@@ -20,11 +15,11 @@ const Page =async ({
         <div className="p-4 border-b light:border-gray-200">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold dark:text-white text-gray-800">
-              Messages
+              Groups
             </h2>
-            <button className="lg:hidden p-2 hover:bg-gray-100 rounded-lg">
-              <Menu className="h-6 w-6" />
-            </button>
+            <Link href={`/group/createGroup`} className="p-2 rounded-lg">
+            <Plus />
+            </Link>
           </div>
           <div className="relative">
             <input
@@ -36,16 +31,12 @@ const Page =async ({
           </div>
         </div>
 
-        <ListChats />
+        <ListGroups />
       </div>
 
-      {searchParams?.id ? (
-        <PrivateChat id={searchParams?.id} />
-      ) : (
-        <NoChats/>
-      )}
+      {children}
     </div>
   );
 }
 
-export default Page;
+export default Layout;

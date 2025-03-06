@@ -1,3 +1,4 @@
+import { extractHourMinutes } from "@/app/utils/helper";
 import Link from "next/link";
 import React from "react";
 
@@ -25,8 +26,8 @@ const ListMiniComponent = ({ user, data }: { user: any; data: any }) => {
           <h3 className="font-semibold dark:text-white text-sm text-gray-900">
             {user.chatName}
           </h3>
-          <span className="text-sm dark:text-white text-gray-500">
-            {user.user?.time}
+          <span className="text-xs dark:text-white text-gray-500">
+            {user.lastMessage.createdAt? extractHourMinutes( user.lastMessage.createdAt):""}
           </span>
         </div>
         <div className="flex justify-between">
@@ -44,7 +45,7 @@ const ListMiniComponent = ({ user, data }: { user: any; data: any }) => {
             )}
 
             {!user.lastMessage.type && (
-              <>Start Conversation with ${user.chatName?.slice(0, 5)}...</>
+              <>Start Conversation with {user.chatName?.slice(0, 5)}...</>
             )}
 
             {user.lastMessage && user.lastMessage.type === "image" && (

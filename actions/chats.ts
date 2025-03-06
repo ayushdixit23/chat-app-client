@@ -31,3 +31,18 @@ export const getPrivateChat = async (conversationId: string) => {
         console.log(error);
     }
 };
+
+
+export const getAllGroups = async () => {
+    const data = await auth();
+    try {
+        const res = await axios.get(`${API}/chats/fetch-groups`, {
+            headers: {
+                Authorization: `Bearer ${data?.user.accessToken}`,
+            },
+        });
+        return res.data;
+    } catch (error) {
+        console.log(error);
+    }
+}

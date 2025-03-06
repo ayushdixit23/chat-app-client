@@ -39,3 +39,10 @@ export const formatFileSize = (bytes: number) => {
   else if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
   else return (bytes / (1024 * 1024)).toFixed(1) + " MB";
 };
+
+export const extractHourMinutes = (isoString: string): string => {
+  const date = new Date(isoString);
+  const hours = date.getHours().toString().padStart(2, "0"); // Ensures two-digit format
+  const minutes = date.getMinutes().toString().padStart(2, "0");
+  return `${hours}:${minutes}`;
+};

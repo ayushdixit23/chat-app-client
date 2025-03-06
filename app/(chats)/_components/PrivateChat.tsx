@@ -91,7 +91,7 @@ const PrivateChat = ({ id }: { id: string }) => {
             const [dayA, monthA, yearA] = a.split("/").map(Number);
             const [dayB, monthB, yearB] = b.split("/").map(Number);
             // @ts-ignore
-            return (new Date(yearA, monthA - 1, dayA) -new Date(yearB, monthB - 1, dayB));
+            return (new Date(yearA, monthA - 1, dayA) - new Date(yearB, monthB - 1, dayB));
           })
           .reduce((acc, date) => {
             acc[date] = mergedMessages[date];
@@ -171,57 +171,20 @@ const PrivateChat = ({ id }: { id: string }) => {
     }
   };
 
+  console.log(data, "data")
+
   const handleMessage = (
     message: string,
     setMessage: React.Dispatch<React.SetStateAction<string>>
   ) => {
     if (messageType === "text") {
       sendTextMessage(message, setMessage);
-    } else if (messageType === "image" || messageType === "video") {
+    } else if (["image", "video"].includes(messageType)) {
       sendMediaMessage();
     } else if (messageType === "document") {
       sendDocumentMessage();
     }
   };
-
-  // const handleMessage = (
-  //   message: string,
-  //   setMessage: React.Dispatch<React.SetStateAction<string>>
-  // ) => {
-  //   const data = {
-  //     "mesId": "temp12345",
-  //     "senderId": {
-  //       "_id": "user123",
-  //       "fullName": "John Doe",
-  //       "profilePic": "https://example.com/profile.jpg"
-  //     },
-  //     "type": "video",
-  //     "conversationId": "conv789",
-  //     "roomId": "room567",
-  //     "createdAt": "2025-02-24T12:00:00Z",
-  //     "imageUrl": "blob:http://localhost/image123",
-  //     "uploadProgress": 45
-  //   }
-  //   queryClient.setQueryData(["getChat", id], (oldData: any) => {
-  //     if (!oldData) return oldData;
-
-  //     const formattedDate = formatDate(data?.createdAt);
-
-  //     return {
-  //       ...oldData,
-  //       conversation: {
-  //         ...oldData.conversation,
-  //         messages: {
-  //           ...oldData.conversation.messages,
-  //           [formattedDate]: [
-  //             ...(oldData?.conversation?.messages?.[formattedDate] || []),
-  //             data,
-  //           ],
-  //         },
-  //       },
-  //     };
-  //   });
-  // };
 
   const uploadMediaToAws = async (
     media: File,
@@ -615,7 +578,7 @@ const PrivateChat = ({ id }: { id: string }) => {
   return (
     <div className="flex flex-col flex-1 h-full">
       {/* Header */}
-      <MessageHeader data={data} socket={socket}/>
+      <MessageHeader data={data} socket={socket} />
 
       {/* Messages */}
 
@@ -690,7 +653,12 @@ const PrivateChat = ({ id }: { id: string }) => {
       </div>
 
       {/* Input */}
-      <InputText handleMessage={handleMessage} socket={socket} roomId={data?.conversation.otherUser._id} conversationId={id}/>
+      <InputText
+        handleMessage={handleMessage}
+        socket={socket}
+        roomId={data?.conversation.isGroup ? data?.conversation.conversationId : data?.conversation.otherUser._id}
+        conversationId={id}
+      />
     </div>
   );
 };
