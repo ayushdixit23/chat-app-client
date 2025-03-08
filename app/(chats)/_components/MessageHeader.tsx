@@ -15,8 +15,10 @@ const MessageHeader = ({
   const chatName = data?.conversation.isGroup ? data?.conversation.groupName : data?.conversation.otherUser.fullName
   const chatPic = data?.conversation.isGroup ? data?.conversation.groupPic : data?.conversation.otherUser.profilePic
   const [user, setUser] = useState<string | null>(null)
+  const [isOnline, setIsOnline] = useState(false)
 
   useEffect(() => {
+    if(!data) return
     socket?.on(`typing`, (socketData) => {
       if (socketData?.conversationId === data?.conversation.conversationId && socketData.senderId !== userId) {
         if (socketData.isGroup) {
@@ -34,7 +36,20 @@ const MessageHeader = ({
         setIsTyping(false);
       }
     });
-  }, [socket]);
+
+    if (!data.conversation.isGroup) {
+      socket?.emit("check-user-online", data?.conversation.otherUser._id)
+    }
+
+    if (!data.conversation.isGroup) {
+      
+      socket?.on("check-user:online", (data) => {
+        console.log("runned",data)
+        setIsOnline(data?.isOnline)
+      })
+    }
+
+  }, [socket,data]);
 
   return (
     <div className="p-4 bg-white dark:bg-[#0d0d0d] dark:text-white border-b light:border-gray-200">
@@ -54,7 +69,10 @@ const MessageHeader = ({
                 {chatName}
               </h2>
               <p className="text-sm text-green-500">
-                {isTyping ? user ? `${user} is typing...` : "typing..." : "Online"}
+                {isTyping ? user ? `${user} is typing...` : "typing..." :
+
+                  isOnline ? "Online" : "Offline"
+                }
               </p>
             </div>
             <div className="flex items-center space-x-2">

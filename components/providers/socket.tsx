@@ -52,7 +52,7 @@ export const SocketContextProvider: React.FC<SocketContextProviderProps> = ({
 
             // Cleanup on component unmount or when dependencies change
             return () => {
-                newSocket?.disconnect();
+            newSocket.disconnect()
             };
         }
 

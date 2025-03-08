@@ -1,7 +1,7 @@
 "use client"
 import { getAllChats } from '@/actions/chats';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import ShimmerListChats from './ShimmerListChats';
 import ErrorPage from './ErrorPage';
 import ListMiniComponent from './ListMiniComponent';
@@ -10,6 +10,7 @@ import axios from 'axios';
 import { API } from '@/app/utils/constants';
 import { useSession } from 'next-auth/react';
 import InfiniteLoader from './InfiniteLoader';
+import { useSocketContext } from '@/components/providers/socket';
 
 const ListChats = () => {
   const {
@@ -19,15 +20,16 @@ const ListChats = () => {
     error,
   } = useQuery({ queryKey: ["allChats"], queryFn: getAllChats });
   const { data } = useSession()
+  const { socket } = useSocketContext()
   const queryClient = useQueryClient();
+  const [onlineUsers, setOnlineUsers] = useState([])
 
-  if (isLoading) {
-    return <ShimmerListChats />;
-  }
+  useEffect(() => {
+    socket?.on("online-users", data => {
 
-  if (isError) {
-    return <ErrorPage message={error.message} />;
-  }
+      setOnlineUsers(data)
+    })
+  }, [socket])
 
   const fetchMoreChats = async () => {
     try {
@@ -51,6 +53,15 @@ const ListChats = () => {
     }
   }
 
+  if (isLoading) {
+    return <ShimmerListChats />;
+  }
+
+  if (isError) {
+    return <ErrorPage message={error.message} />;
+  }
+
+
   return (
     <div className="overflow-y-auto flex-1" id="listChatDiv">
       <InfiniteScroll
@@ -63,7 +74,7 @@ const ListChats = () => {
         style={{ display: "flex", flexDirection: "column" }} // Keeps the scroll behavior correct
       >
         {chatData?.users.map((user: any) => (
-          <ListMiniComponent user={user} key={user._id} data={data}/>
+          <ListMiniComponent user={user} key={user._id} data={data} onlineUsers={onlineUsers}/>
         ))}
       </InfiniteScroll>
     </div>
