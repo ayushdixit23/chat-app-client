@@ -21,6 +21,7 @@ const ListAllGroups = ({ group,data }: { group: any,data:any}) => {
                         }`}
                 />
             </div>
+           
             <div className="ml-3 flex-1">
                 <div className="flex justify-between">
                     <h3 className="font-semibold dark:text-white text-sm text-gray-900">
@@ -37,8 +38,8 @@ const ListAllGroups = ({ group,data }: { group: any,data:any}) => {
                                 {group.lastMessage?.text
                                     ? `${group.lastMessage?.sender?._id === data?.user.id
                                         ? "You: "
-                                        : ""
-                                    }${group.lastMessage?.text}`
+                                        : `${group.lastMessage.sender.fullName}: `
+                                    }${group.lastMessage?.text.length>20?`${group.lastMessage?.text.slice(0,20)}...`:group.lastMessage?.text}`
                                     : `Start Conversation with ${group.groupName?.slice(0, 5)}...`}
                             </>
                         )}

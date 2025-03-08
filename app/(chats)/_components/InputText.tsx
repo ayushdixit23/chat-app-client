@@ -1,5 +1,5 @@
 import { Send } from "lucide-react";
-import React, { FormEvent, useState } from "react";
+import React, { useState } from "react";
 import DropdownButton from "./DropdownButton";
 import { Socket } from "socket.io-client";
 

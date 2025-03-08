@@ -162,6 +162,7 @@ const MessageBody = ({
       className={`flex items-end ${isOwnMessage ? "justify-end" : "justify-start"
         } space-x-2`}
     >
+
       {!isOwnMessage && (
         <div className="flex-shrink-0">
           <div className="w-10 h-10 rounded-full overflow-hidden">

@@ -13,7 +13,7 @@ import React, { useEffect, useState } from "react";
 import InputText from "./InputText";
 import MessageBody from "./MessageBody";
 import MessageHeader from "./MessageHeader";
-import useMessageStore from "@/app/zustand/stores/message";
+import useMessageStore, { value } from "@/app/zustand/stores/message";
 import axios, { AxiosProgressEvent } from "axios";
 import { API, CHAT_MESSAGE_URL } from "@/app/utils/constants";
 import Loader from "./Loader";
@@ -114,9 +114,51 @@ const PrivateChat = ({ id }: { id: string }) => {
     }
   };
 
+  const createMessage = (messageType: value, media?: File | null, message?: string) => {
+    const tempMessageId = generateRandomChatId();
+
+    const tempMessage = {
+      mesId: tempMessageId,
+      senderId: {
+        _id: user?.user.id,
+        fullName: user?.user.fullName,
+        profilePic: user?.user.profilePic,
+      },
+      type: messageType,
+      conversationId: id,
+      // roomId: data?.conversation.isGroup ? id : data?.conversation.otherUser._id,
+      roomId: id,
+      createdAt: new Date(),
+      text: message,
+      ...(messageType === "image" && media && {
+        imageUrl: URL.createObjectURL(media),
+        uploadProgress: 0,
+      }),
+      ...(messageType === "video" && media && {
+        videoUrl: URL.createObjectURL(media),
+        uploadProgress: 0,
+      }),
+      ...(messageType === "document" && media
+        && {
+        document: {
+          url: URL.createObjectURL(media),
+          name: media.name,
+          size: formatFileSize(media.size),
+        },
+      }
+      ),
+    };
+
+    return { tempMessage, tempMessageId };
+  };
+
+
   useEffect(() => {
+    if (!id || !socket) return
     socket?.on("message", (socketData) => {
-      if (socketData?.conversationId === id) {
+      console.log(socketData, "1")
+      if ((socketData?.conversationId === id) && (socketData.senderId._id !== user?.user.id)) {
+        console.log(socketData, "2")
         queryClient.setQueryData(["getChat", id], (oldData: any) => {
           if (!oldData) return oldData;
           const formattedDate = formatDate(socketData.createdAt);
@@ -137,11 +179,15 @@ const PrivateChat = ({ id }: { id: string }) => {
       }
     });
 
+    socket?.emit("join-room", id)
+
     // Cleanup listener on unmount
     return () => {
       socket?.off("message");
+      socket?.off("leave-room")
     };
   }, [socket, id, queryClient]);
+
 
   const sendTextMessage = (
     message: string,
@@ -149,29 +195,15 @@ const PrivateChat = ({ id }: { id: string }) => {
   ) => {
     if (!message) return;
     try {
-      const messageToSend = {
-        mesId: generateRandomChatId(),
-        senderId: {
-          _id: user?.user.id,
-          fullName: user?.user.fullName,
-          profilePic: user?.user.profilePic,
-        },
-        type: "text", // Explicitly set type for consistency
-        conversationId: id,
-        text: message,
-        roomId: data?.conversation.otherUser._id,
-        createdAt: new Date(Date.now()),
-      };
+      const { tempMessage } = createMessage("text", null, message)
 
-      updateMessageCache(messageToSend);
-      socket?.emit(`message`, messageToSend);
+      updateMessageCache(tempMessage);
+      socket?.emit(`message`, tempMessage);
       setMessage("");
     } catch (error) {
       console.error("Error sending text message:", error);
     }
   };
-
-  console.log(data, "data")
 
   const handleMessage = (
     message: string,
@@ -240,33 +272,9 @@ const PrivateChat = ({ id }: { id: string }) => {
 
   const sendMediaMessage = async () => {
     if (!media) return;
-
     setMessageType("text");
-
     try {
-      // Create a temporary message to show upload progress
-      const tempMessageId = generateRandomChatId();
-      const tempMessage = {
-        mesId: tempMessageId,
-        senderId: {
-          _id: user?.user.id,
-          fullName: user?.user.fullName,
-          profilePic: user?.user.profilePic,
-        },
-        type: messageType,
-        conversationId: id,
-        roomId: data?.conversation.otherUser._id,
-        createdAt: new Date(Date.now()),
-        // For image/video preview during upload
-        ...(messageType === "image" && {
-          imageUrl: URL.createObjectURL(media),
-          uploadProgress: 0,
-        }),
-        ...(messageType === "video" && {
-          videoUrl: URL.createObjectURL(media),
-          uploadProgress: 0,
-        }),
-      };
+      const { tempMessage, tempMessageId } = createMessage(messageType, media)
 
       // Add temp message to UI
       updateMessageCache(tempMessage);
@@ -411,26 +419,7 @@ const PrivateChat = ({ id }: { id: string }) => {
     setMessageType("text");
 
     try {
-      // Create a temporary message to show upload progress
-      const tempMessageId = generateRandomChatId();
-      const tempMessage = {
-        mesId: tempMessageId,
-        senderId: {
-          _id: user?.user.id,
-          fullName: user?.user.fullName,
-          profilePic: user?.user.profilePic,
-        },
-        type: messageType,
-        conversationId: id,
-        roomId: data?.conversation.otherUser._id,
-        createdAt: new Date(Date.now()),
-        document: {
-          url: URL.createObjectURL(media),
-          name: media.name,
-          size: formatFileSize(media.size),
-        },
-        uploadProgress: 0,
-      };
+      const { tempMessage, tempMessageId } = createMessage(messageType, media)
 
       // Add temp message to UI
       updateMessageCache(tempMessage);
