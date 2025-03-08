@@ -5,23 +5,32 @@ import { Socket } from "socket.io-client";
 const MessageHeader = ({
   data,
   socket,
+  userId
 }: {
   data: any;
   socket: Socket | null;
+  userId: string
 }) => {
   const [isTyping, setIsTyping] = useState(false);
   const chatName = data?.conversation.isGroup ? data?.conversation.groupName : data?.conversation.otherUser.fullName
-  const chatPic=data?.conversation.isGroup ? data?.conversation.groupPic : data?.conversation.otherUser.profilePic
+  const chatPic = data?.conversation.isGroup ? data?.conversation.groupPic : data?.conversation.otherUser.profilePic
+  const [user, setUser] = useState<string | null>(null)
 
   useEffect(() => {
     socket?.on(`typing`, (socketData) => {
-      if (socketData?.conversationId === data?.conversation.conversationId) {
+      if (socketData?.conversationId === data?.conversation.conversationId && socketData.senderId !== userId) {
+        if (socketData.isGroup) {
+          setUser(socketData.fullName)
+        }
         setIsTyping(true);
       }
     });
 
     socket?.on("not-typing", (socketData) => {
-      if (socketData?.conversationId === data?.conversation.conversationId) {
+      if (socketData?.conversationId === data?.conversation.conversationId && socketData.senderId !== userId) {
+        if (socketData.isGroup) {
+          setUser(null)
+        }
         setIsTyping(false);
       }
     });
@@ -45,7 +54,7 @@ const MessageHeader = ({
                 {chatName}
               </h2>
               <p className="text-sm text-green-500">
-                {isTyping ? "typing..." : "Online"}
+                {isTyping ? user ? `${user} is typing...` : "typing..." : "Online"}
               </p>
             </div>
             <div className="flex items-center space-x-2">

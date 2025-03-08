@@ -24,7 +24,7 @@ const ListMiniComponent = ({ user, data }: { user: any; data: any }) => {
       <div className="ml-3 flex-1">
         <div className="flex justify-between">
           <h3 className="font-semibold dark:text-white text-sm text-gray-900">
-            {user.chatName}
+            {user.chatName.length > 20 ? `${user.chatName.slice(0, 20)}...` : user.chatName}
           </h3>
           <span className="text-xs dark:text-white text-gray-500">
             {user.lastMessage.createdAt? extractHourMinutes( user.lastMessage.createdAt):""}

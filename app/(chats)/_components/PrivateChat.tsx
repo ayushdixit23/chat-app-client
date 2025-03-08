@@ -156,9 +156,7 @@ const PrivateChat = ({ id }: { id: string }) => {
   useEffect(() => {
     if (!id || !socket) return
     socket?.on("message", (socketData) => {
-      console.log(socketData, "1")
       if ((socketData?.conversationId === id) && (socketData.senderId._id !== user?.user.id)) {
-        console.log(socketData, "2")
         queryClient.setQueryData(["getChat", id], (oldData: any) => {
           if (!oldData) return oldData;
           const formattedDate = formatDate(socketData.createdAt);
@@ -567,7 +565,7 @@ const PrivateChat = ({ id }: { id: string }) => {
   return (
     <div className="flex flex-col flex-1 h-full">
       {/* Header */}
-      <MessageHeader data={data} socket={socket} />
+      <MessageHeader data={data} socket={socket} userId={user?.user.id as string}/>
 
       {/* Messages */}
 
@@ -647,6 +645,9 @@ const PrivateChat = ({ id }: { id: string }) => {
         socket={socket}
         roomId={data?.conversation.isGroup ? data?.conversation.conversationId : data?.conversation.otherUser._id}
         conversationId={id}
+        isGroup={data?.conversation.isGroup}
+        userFullName={user?.user.fullName as string}
+        senderId={user?.user.id as string}
       />
     </div>
   );

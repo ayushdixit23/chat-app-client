@@ -1,13 +1,17 @@
+
 import { Send } from "lucide-react";
 import React, { useState } from "react";
-import DropdownButton from "./DropdownButton";
 import { Socket } from "socket.io-client";
+import DropdownButton from "./DropdownButton";
 
 const InputText = ({
   handleMessage,
   socket,
   roomId,
-  conversationId
+  conversationId,
+  isGroup,
+  userFullName,
+  senderId
 }: {
   handleMessage: (
     message: string,
@@ -16,6 +20,9 @@ const InputText = ({
   socket: Socket | null;
   roomId: string;
   conversationId: string;
+  isGroup: boolean;
+  userFullName: string;
+  senderId:string
 }) => {
   const [message, setMessage] = useState("");
   const [isTyping, setIsTyping] = useState(false);
@@ -25,13 +32,13 @@ const InputText = ({
   const handleTyping = () => {
     if (!isTyping) {
       setIsTyping(true);
-      socket?.emit("typing", {roomId,conversationId });
+      socket?.emit("typing", { roomId, conversationId, isGroup, fullName: userFullName, senderId });
     }
 
     clearTimeout(typingTimeout);
     typingTimeout = setTimeout(() => {
       setIsTyping(false);
-      socket?.emit("not-typing", { roomId, conversationId});
+      socket?.emit("not-typing", { roomId, conversationId, isGroup, fullName: userFullName,senderId });
     }, 2500);
   };
 
@@ -41,7 +48,7 @@ const InputText = ({
   };
 
   const handleMessageWithTyping = () => {
-    socket?.emit("not-typing", { roomId,conversationId });
+    socket?.emit("not-typing", { roomId, conversationId, isGroup, fullName: userFullName,senderId });
     handleMessage(message, setMessage);
   };
 
@@ -56,7 +63,7 @@ const InputText = ({
           placeholder="Type a message..."
           onKeyDown={(e) => {
             if (e.key === "Enter") {
-                handleMessageWithTyping()
+              handleMessageWithTyping();
             }
           }}
           className="flex-1 p-3 border light:border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 dark:bg-transparent bg-gray-50"
