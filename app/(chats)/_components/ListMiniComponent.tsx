@@ -11,10 +11,10 @@ const ListMiniComponent = ({
   data: any;
   onlineUsers: string[];
 }) => {
-  console.log(user)
   const otherUserArray = user.users.filter((u: any) => u._id !== data.user.id)
   const otherUserId = otherUserArray[0]._id
   const isOnline = onlineUsers.includes(otherUserId) && !user.isGroup;
+  
   return (
     <Link
       href={`?id=${user._id}`}
@@ -56,7 +56,7 @@ const ListMiniComponent = ({
                 {user.lastMessage.text
                   ? `${user.lastMessage.sender?._id === data.user.id
                     ? "You: "
-                    : ""
+                    : user.isGroup ? `${user.lastMessage.sender.fullName.split(" ")[0]}: ` : ""
                   }${user.lastMessage.text}`
                   : `Start Conversation with ${user.chatName?.slice(0, 5)}...`}
               </>

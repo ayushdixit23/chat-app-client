@@ -116,6 +116,7 @@ const PrivateChat = ({ id }: { id: string }) => {
 
   const createMessage = (messageType: value, media?: File | null, message?: string) => {
     const tempMessageId = generateRandomChatId();
+    const isGroup = data?.conversation.isGroup
 
     const tempMessage = {
       mesId: tempMessageId,
@@ -126,9 +127,28 @@ const PrivateChat = ({ id }: { id: string }) => {
       },
       type: messageType,
       conversationId: id,
-      // roomId: data?.conversation.isGroup ? id : data?.conversation.otherUser._id,
+      ...(isGroup && {
+        chatData: {
+          chatName: data?.conversation.groupName,
+          profilePic: data?.conversation.groupPic
+        },
+      }),
+      isGroup,
+      users: isGroup ? data?.conversation.groupUsers : [
+        {
+          _id: data?.conversation.otherUser._id,
+          fullName: data?.conversation.otherUser.fullName,
+          profilePic: data?.conversation.otherUser.profilePic,
+        },
+        {
+          _id: user?.user.id,
+          fullName: user?.user.fullName,
+          profilePic: user?.user.profilePic
+        }
+      ],
       roomId: id,
       createdAt: new Date(),
+      receiverId: isGroup ? id : data?.conversation.otherUser._id,
       text: message,
       ...(messageType === "image" && media && {
         imageUrl: URL.createObjectURL(media),
@@ -151,7 +171,6 @@ const PrivateChat = ({ id }: { id: string }) => {
 
     return { tempMessage, tempMessageId };
   };
-
 
   useEffect(() => {
     if (!id || !socket) return
@@ -265,6 +284,39 @@ const PrivateChat = ({ id }: { id: string }) => {
           },
         },
       };
+    });
+
+    queryClient.setQueryData(["allChats"], (oldData: any) => {
+      if (!oldData) return oldData;
+
+      const lastMessage = {
+        type: messageToSend?.type,
+        text: messageToSend?.text,
+        sender: messageToSend?.senderId,
+        createdAt: messageToSend?.createdAt,
+      };
+
+        let updatedUsers = oldData?.users.map((d: any) =>
+          d._id === messageToSend?.conversationId
+            ? { ...d, lastMessage: lastMessage }
+            : d
+        );
+
+        // Filter out the updated chat and move it to the top
+        const updatedChat = updatedUsers.find(
+          (d: any) => d._id === messageToSend?.conversationId
+        );
+        const filteredUsers = updatedUsers.filter(
+          (d: any) => d._id !== messageToSend?.conversationId
+        );
+
+        updatedUsers = updatedChat ? [updatedChat, ...filteredUsers] : updatedUsers;
+
+        console.log(updatedUsers,"updatedUsers")
+        return {
+          ...oldData,
+          users: updatedUsers,
+        };
     });
   };
 
@@ -565,19 +617,10 @@ const PrivateChat = ({ id }: { id: string }) => {
   return (
     <div className="flex flex-col flex-1 h-full">
       {/* Header */}
-      <MessageHeader data={data} socket={socket} userId={user?.user.id as string}/>
-
-      {/* Messages */}
+      <MessageHeader data={data} socket={socket} userId={user?.user.id as string} />
 
       <div className="flex-1 w-full overflow-y-auto">
-        {/* <div className="flex items-center justify-center p-4 text-center">
-          <div className="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 px-4 py-4 rounded-full">
-            <Lock className="h-3 w-3" />
-            <span className="text-xs">
-              Messages are end-to-end encrypted
-            </span>
-          </div>
-        </div> */}
+       
         {messageType === "text" && (
           <div
             id="individualChats"

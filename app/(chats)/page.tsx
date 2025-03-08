@@ -12,6 +12,7 @@ const Page =async ({
 }: {
   searchParams?: { id?: string;[key: string]: string | string[] | undefined };
 }) => {
+  const currSearchParams = await searchParams;
   return (
     <div className="flex w-full bg-gray-50 dark:bg-[#0d0d0d] dark:text-white">
 
@@ -39,8 +40,8 @@ const Page =async ({
         <ListChats />
       </div>
 
-      {searchParams?.id ? (
-        <PrivateChat id={searchParams?.id} />
+      {currSearchParams?.id ? (
+        <PrivateChat id={currSearchParams?.id} />
       ) : (
         <NoChats/>
       )}

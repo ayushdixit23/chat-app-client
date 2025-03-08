@@ -42,9 +42,7 @@ const MessageHeader = ({
     }
 
     if (!data.conversation.isGroup) {
-      
       socket?.on("check-user:online", (data) => {
-        console.log("runned",data)
         setIsOnline(data?.isOnline)
       })
     }

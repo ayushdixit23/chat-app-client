@@ -25,11 +25,70 @@ const ListChats = () => {
   const [onlineUsers, setOnlineUsers] = useState([])
 
   useEffect(() => {
-    socket?.on("online-users", data => {
+    socket?.on("online-users", (data) => {
+      setOnlineUsers(data);
+    });
 
-      setOnlineUsers(data)
-    })
-  }, [socket])
+    socket?.on("user-messages", (data) => {
+      queryClient.setQueryData(["allChats"], (oldData: any) => {
+        if (!oldData) return oldData;
+
+        const lastMessage = {
+          type: data?.type,
+          text: data?.text,
+          sender: data?.senderId,
+          createdAt: data?.createdAt,
+        };
+
+        // Check if the conversation exists
+        const existingChat = oldData?.users.find(
+          (d: any) => d._id === data?.conversationId
+        );
+
+        let updatedUsers;
+
+        if (existingChat) {
+          // Update last message and move chat to the top
+          updatedUsers = oldData?.users.map((d: any) =>
+            d._id === data?.conversationId
+              ? { ...d, lastMessage: lastMessage }
+              : d
+          );
+
+          // Filter out the updated chat and move it to the top
+          const updatedChat = updatedUsers.find(
+            (d: any) => d._id === data?.conversationId
+          );
+          const filteredUsers = updatedUsers.filter(
+            (d: any) => d._id !== data?.conversationId
+          );
+
+          updatedUsers = updatedChat ? [updatedChat, ...filteredUsers] : updatedUsers;
+        } else {
+          const newChat = {
+            _id: data?.conversationId,
+            chatName: data?.isGroup ? data?.chatData.chatName : data?.senderId.fullName,
+            profilePic: data?.isGroup ? data?.chatData.profilePic : data?.senderId.profilePic,
+            lastMessage: lastMessage,
+            users: data?.users
+          };
+
+          updatedUsers = [newChat, ...oldData.users];
+        }
+
+        return {
+          ...oldData,
+          users: updatedUsers,
+        };
+      });
+
+    });
+
+    return () => {
+      socket?.off("online-users");
+      socket?.off("user-messages");
+    };
+  }, [socket, queryClient]);
 
   const fetchMoreChats = async () => {
     try {
@@ -38,8 +97,6 @@ const ListChats = () => {
           Authorization: `Bearer ${data?.user.accessToken}`
         }
       })
-
-      console.log(res.data, "laod more")
       const newUsers = res.data.users
 
       queryClient.setQueryData(["allChats"], (oldData: any) => ({
@@ -61,7 +118,6 @@ const ListChats = () => {
     return <ErrorPage message={error.message} />;
   }
 
-
   return (
     <div className="overflow-y-auto flex-1" id="listChatDiv">
       <InfiniteScroll
@@ -74,7 +130,7 @@ const ListChats = () => {
         style={{ display: "flex", flexDirection: "column" }} // Keeps the scroll behavior correct
       >
         {chatData?.users.map((user: any) => (
-          <ListMiniComponent user={user} key={user._id} data={data} onlineUsers={onlineUsers}/>
+          <ListMiniComponent user={user} key={user._id} data={data} onlineUsers={onlineUsers} />
         ))}
       </InfiniteScroll>
     </div>
