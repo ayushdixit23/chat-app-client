@@ -296,27 +296,27 @@ const PrivateChat = ({ id }: { id: string }) => {
         createdAt: messageToSend?.createdAt,
       };
 
-        let updatedUsers = oldData?.users.map((d: any) =>
-          d._id === messageToSend?.conversationId
-            ? { ...d, lastMessage: lastMessage }
-            : d
-        );
+      let updatedUsers = oldData?.users.map((d: any) =>
+        d._id === messageToSend?.conversationId
+          ? { ...d, lastMessage: lastMessage }
+          : d
+      );
 
-        // Filter out the updated chat and move it to the top
-        const updatedChat = updatedUsers.find(
-          (d: any) => d._id === messageToSend?.conversationId
-        );
-        const filteredUsers = updatedUsers.filter(
-          (d: any) => d._id !== messageToSend?.conversationId
-        );
+      // Filter out the updated chat and move it to the top
+      const updatedChat = updatedUsers.find(
+        (d: any) => d._id === messageToSend?.conversationId
+      );
+      const filteredUsers = updatedUsers.filter(
+        (d: any) => d._id !== messageToSend?.conversationId
+      );
 
-        updatedUsers = updatedChat ? [updatedChat, ...filteredUsers] : updatedUsers;
+      updatedUsers = updatedChat ? [updatedChat, ...filteredUsers] : updatedUsers;
 
-        console.log(updatedUsers,"updatedUsers")
-        return {
-          ...oldData,
-          users: updatedUsers,
-        };
+      console.log(updatedUsers, "updatedUsers")
+      return {
+        ...oldData,
+        users: updatedUsers,
+      };
     });
   };
 
@@ -380,18 +380,10 @@ const PrivateChat = ({ id }: { id: string }) => {
 
         // Create final message
         const finalMessage = {
-          mesId: tempMessageId,
-          senderId: {
-            _id: user?.user.id,
-            fullName: user?.user.fullName,
-            profilePic: user?.user.profilePic,
-          },
-          type: messageType,
-          conversationId: id,
-          roomId: data?.conversation.otherUser._id,
-          createdAt: new Date(Date.now()),
+          ...tempMessage,
           ...(messageType === "image" && { imageUrl: actualUrl }),
           ...(messageType === "video" && { videoUrl: actualUrl }),
+          uploadProgress: undefined
         };
 
         // Replace the temporary message with the final one
@@ -525,21 +517,13 @@ const PrivateChat = ({ id }: { id: string }) => {
 
         // Create final message
         const finalMessage = {
-          mesId: tempMessageId,
-          senderId: {
-            _id: user?.user.id,
-            fullName: user?.user.fullName,
-            profilePic: user?.user.profilePic,
-          },
-          type: messageType,
-          conversationId: id,
-          roomId: data?.conversation.otherUser._id,
-          createdAt: new Date(Date.now()),
+          ...tempMessage,
           document: {
             url: actualUrl,
             name: media.name,
             size: formatFileSize(media.size),
           },
+          uploadProgress: undefined
         };
 
         // Replace the temporary message with the final one
@@ -620,7 +604,7 @@ const PrivateChat = ({ id }: { id: string }) => {
       <MessageHeader data={data} socket={socket} userId={user?.user.id as string} />
 
       <div className="flex-1 w-full overflow-y-auto">
-       
+
         {messageType === "text" && (
           <div
             id="individualChats"
