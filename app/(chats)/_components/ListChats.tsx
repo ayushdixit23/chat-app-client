@@ -11,6 +11,8 @@ import { API } from '@/app/utils/constants';
 import { useSession } from 'next-auth/react';
 import InfiniteLoader from './InfiniteLoader';
 import { useSocketContext } from '@/components/providers/socket';
+import useFeatures from '@/app/zustand/stores/feature';
+import { updateChats } from '@/app/utils/helper';
 
 const ListChats = () => {
   const {
@@ -22,66 +24,26 @@ const ListChats = () => {
   const { data } = useSession()
   const { socket } = useSocketContext()
   const queryClient = useQueryClient();
-  const [onlineUsers, setOnlineUsers] = useState([])
+  const { onlineUsers, setOnlineUsers } = useFeatures((state) => state)
 
   useEffect(() => {
     socket?.on("online-users", (data) => {
       setOnlineUsers(data);
     });
 
+
     socket?.on("user-messages", (data) => {
-      queryClient.setQueryData(["allChats"], (oldData: any) => {
-        if (!oldData) return oldData;
-
-        const lastMessage = {
-          type: data?.type,
-          text: data?.text,
-          sender: data?.senderId,
-          createdAt: data?.createdAt,
-        };
-
-        // Check if the conversation exists
-        const existingChat = oldData?.users.find(
-          (d: any) => d._id === data?.conversationId
+      console.log(data?.isGroup)
+      if (data?.isGroup) {
+        queryClient.setQueryData(["getGroups"], (oldData: any) =>
+          updateChats(oldData, data, "groups")
         );
+      }
 
-        let updatedUsers;
-
-        if (existingChat) {
-          // Update last message and move chat to the top
-          updatedUsers = oldData?.users.map((d: any) =>
-            d._id === data?.conversationId
-              ? { ...d, lastMessage: lastMessage }
-              : d
-          );
-
-          // Filter out the updated chat and move it to the top
-          const updatedChat = updatedUsers.find(
-            (d: any) => d._id === data?.conversationId
-          );
-          const filteredUsers = updatedUsers.filter(
-            (d: any) => d._id !== data?.conversationId
-          );
-
-          updatedUsers = updatedChat ? [updatedChat, ...filteredUsers] : updatedUsers;
-        } else {
-          const newChat = {
-            _id: data?.conversationId,
-            chatName: data?.isGroup ? data?.chatData.chatName : data?.senderId.fullName,
-            profilePic: data?.isGroup ? data?.chatData.profilePic : data?.senderId.profilePic,
-            lastMessage: lastMessage,
-            users: data?.users
-          };
-
-          updatedUsers = [newChat, ...oldData.users];
-        }
-
-        return {
-          ...oldData,
-          users: updatedUsers,
-        };
-      });
-
+      // Update individual chats (DMs)
+      queryClient.setQueryData(["allChats"], (oldData: any) =>
+        updateChats(oldData, data, "users")
+      );
     });
 
     return () => {

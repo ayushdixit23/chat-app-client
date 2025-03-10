@@ -70,8 +70,6 @@ const PrivateChat = ({ id }: { id: string }) => {
       const newMessages = res.data.messages;
       const hasMore = res.data.hasMore;
 
-      console.log("Fetching older messages...", { hasMore });
-
       queryClient.setQueryData(["getChat", id], (oldData: any) => {
         if (!oldData) return oldData;
 
@@ -205,7 +203,6 @@ const PrivateChat = ({ id }: { id: string }) => {
     };
   }, [socket, id, queryClient]);
 
-
   const sendTextMessage = (
     message: string,
     setMessage: React.Dispatch<React.SetStateAction<string>>
@@ -311,8 +308,6 @@ const PrivateChat = ({ id }: { id: string }) => {
       );
 
       updatedUsers = updatedChat ? [updatedChat, ...filteredUsers] : updatedUsers;
-
-      console.log(updatedUsers, "updatedUsers")
       return {
         ...oldData,
         users: updatedUsers,

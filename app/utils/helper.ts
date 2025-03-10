@@ -65,3 +65,44 @@ export const extractHourMinutes = (isoString: string): string => {
     return date.toLocaleDateString("en-GB"); // Formats as DD/MM/YYYY
   }
 };
+
+
+export const updateChats = (oldData: any, data: any, key: string) => {
+  if (!oldData) return oldData;
+
+  const lastMessage = {
+    type: data?.type,
+    text: data?.text,
+    sender: data?.senderId,
+    createdAt: data?.createdAt,
+  };
+
+  // Find existing chat
+  const existingChat = oldData[key]?.find((d: any) => d._id === data?.conversationId);
+
+  let updatedChats;
+
+  if (existingChat) {
+    updatedChats = oldData[key].map((d: any) =>
+      d._id === data?.conversationId ? { ...d, lastMessage } : d
+    );
+
+    // Move updated chat to the top
+    const updatedChat = updatedChats.find((d: any) => d._id === data?.conversationId);
+    updatedChats = updatedChat
+      ? [updatedChat, ...updatedChats.filter((d: any) => d._id !== data?.conversationId)]
+      : updatedChats;
+  } else {
+    const newChat = {
+      _id: data?.conversationId,
+      chatName: data?.isGroup ? data?.chatData.chatName : data?.senderId.fullName,
+      profilePic: data?.isGroup ? data?.chatData.profilePic : data?.senderId.profilePic,
+      lastMessage,
+      users: data?.users,
+    };
+
+    updatedChats = [newChat, ...oldData[key]];
+  }
+  console.log({ ...oldData, [key]: updatedChats })
+  return { ...oldData, [key]: updatedChats };
+};
