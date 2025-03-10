@@ -26,35 +26,55 @@ const ManageImage = ({ msg }: { msg: any }) => (
     ) : (
       // Display final uploaded image
       <div className="relative">
-        <img
-          src={msg.imageUrl}
-          alt="Uploaded"
-          className="w-full rounded-md"
-        />
+        <img src={msg.imageUrl} alt="Uploaded" className="w-full rounded-md" />
       </div>
     )}
   </div>
 );
 
-const ManageDocument = ({ msg, isOwnMessage }: { msg: any, isOwnMessage: boolean }) => {
+const ReadStatus = ({ isSeen }: { isSeen: boolean }) => {
+  if (!isSeen) {
+    // Single tick for sent but not seen
+    return <Check size={12} className="text-white" />;
+  } else {
+    // Double tick for seen messages
+    return (
+      <div className="flex">
+        <Check size={12} className="text-white" />
+        <Check size={12} className="text-white -ml-1" />
+      </div>
+    );
+  }
+};
+
+const ManageDocument = ({
+  msg,
+  isOwnMessage,
+}: {
+  msg: any;
+  isOwnMessage: boolean;
+}) => {
   const [isDownloading, setIsDownloading] = useState(false);
   const [isDownloaded, setIsDownloaded] = useState(false);
-  const { data } = useSession()
+  const { data } = useSession();
 
   const handleDownload = async () => {
-
     if (isDownloading || isDownloaded) return;
 
     setIsDownloading(true);
 
     try {
-      const res = await axios.post(`${API}/chats/generateDowloadUrl`, {
-        url: msg.document.url
-      }, {
-        headers: {
-          Authorization: `Bearer ${data?.user.accessToken}`
+      const res = await axios.post(
+        `${API}/chats/generateDowloadUrl`,
+        {
+          url: msg.document.url,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${data?.user.accessToken}`,
+          },
         }
-      })
+      );
       const link = document.createElement("a");
       link.href = res.data.url;
       link.download = msg.document.name;
@@ -82,7 +102,6 @@ const ManageDocument = ({ msg, isOwnMessage }: { msg: any, isOwnMessage: boolean
           <p className="text-xs text-gray-500">{msg.document.size}</p>
 
           {/* Upload Progress UI */}
-
         </div>
       </div>
 
@@ -91,12 +110,14 @@ const ManageDocument = ({ msg, isOwnMessage }: { msg: any, isOwnMessage: boolean
       {msg.uploadProgress !== undefined && msg.uploadProgress < 100 ? (
         <div className="mt-2 flex items-center space-x-2">
           <CircularProgress progress={msg.uploadProgress} />
-
         </div>
-      ) :
-      
+      ) : (
         <button
-          className={`px-2 py-1 rounded-ful1 flex items-center gap-2 ${isOwnMessage ? "bg-blue-400 text-white" : "bg-gray-100 dark:bg-transparent dark:border dark:text-white text-gray-700"} 
+          className={`px-2 py-1 rounded-ful1 flex items-center gap-2 ${
+            isOwnMessage
+              ? "bg-blue-400 text-white"
+              : "bg-gray-100 dark:bg-transparent dark:border dark:text-white text-gray-700"
+          } 
         text-sm rounded-md hover:opacity-90 transition-all duration-200 
         ${isDownloading ? "opacity-50 cursor-not-allowed" : ""}`}
           onClick={handleDownload}
@@ -110,12 +131,10 @@ const ManageDocument = ({ msg, isOwnMessage }: { msg: any, isOwnMessage: boolean
             <Download size={18} />
           )}
         </button>
-      }
-
+      )}
     </div>
   );
 };
-
 
 const ManageVideo = ({ msg }: { msg: any }) => (
   <div className="space-y-2 w-full max-w-[350px]">
@@ -123,17 +142,9 @@ const ManageVideo = ({ msg }: { msg: any }) => (
       <div className="relative rounded-md w-full aspect-video flex items-center justify-center">
         {/* Video Preview */}
         {msg.videoUrl && (
-          // <video
-          //   src={msg.videoUrl}
-          //   poster={msg.videoUrl}
-          //   className="w-full h-full object-cover rounded-md"
-          //   muted
-          //   loop
-          // />
           <div className="w-[300px] h-[200px]">
-             <Video url={msg.videoUrl}/>
+            <Video url={msg.videoUrl} />
           </div>
-         
         )}
         {/* Upload Progress */}
         <div className="absolute inset-0 flex flex-col items-center justify-center p-4">
@@ -143,21 +154,13 @@ const ManageVideo = ({ msg }: { msg: any }) => (
     ) : (
       // Display final uploaded video
       <div className="relative w-full">
-        {/* <video
-          src={msg.videoUrl}
-          poster={msg.videoUrl}
-          className="w-full rounded-md"
-          controls
-        /> */}
         <div className="w-[350px] h-full">
-             <Video url={msg.videoUrl}/>
-          </div>
-         
+          <Video url={msg.videoUrl} />
+        </div>
       </div>
     )}
   </div>
 );
-
 
 const MessageBody = ({
   isOwnMessage,
@@ -168,10 +171,10 @@ const MessageBody = ({
 }) => {
   return (
     <div
-      className={`flex items-end ${isOwnMessage ? "justify-end" : "justify-start"
-        } space-x-2`}
+      className={`flex items-end ${
+        isOwnMessage ? "justify-end" : "justify-start"
+      } space-x-2`}
     >
-
       {!isOwnMessage && (
         <div className="flex-shrink-0">
           <div className="w-10 h-10 rounded-full overflow-hidden">
@@ -185,24 +188,34 @@ const MessageBody = ({
       )}
 
       <div
-        className={`flex flex-col ${isOwnMessage ? "items-end" : "items-start"
-          }`}
+        className={`flex flex-col ${
+          isOwnMessage ? "items-end" : "items-start"
+        }`}
       >
         <div
-          className={`relative inline-block max-w-[280px] md:max-w-[420px] ${isOwnMessage
-            ? "bg-blue-500 text-white"
-            : "bg-white dark:bg-transparent dark:text-white dark:border"
-            } px-4 py-3 rounded-xl shadow-sm`}
+          className={`relative inline-block max-w-[280px] md:max-w-[420px] ${
+            isOwnMessage
+              ? "bg-blue-500 text-white"
+              : "bg-white dark:bg-transparent dark:text-white dark:border"
+          } px-4 py-3 rounded-xl shadow-sm`}
         >
           {msg.type === "text" && (
-            <p className="text-sm whitespace-pre-wrap break-words">
+            <p className="text-sm whitespace-pre-wrap break-words pb-2 pr-3">
               {msg.text}
             </p>
           )}
 
+          {isOwnMessage && (
+            <div className="absolute p-2 pt-0 right-0 bottom-0">
+              <ReadStatus isSeen={msg.isSeen} />
+            </div>
+          )}
+
           {msg.type === "image" && <ManageImage msg={msg} />}
           {msg.type === "video" && <ManageVideo msg={msg} />}
-          {msg.type === "document" && <ManageDocument msg={msg} isOwnMessage={isOwnMessage} />}
+          {msg.type === "document" && (
+            <ManageDocument msg={msg} isOwnMessage={isOwnMessage} />
+          )}
         </div>
         <span className="text-xs text-gray-500 dark:text-gray-400 mt-1 px-1">
           {new Date(msg.createdAt).toLocaleTimeString([], {

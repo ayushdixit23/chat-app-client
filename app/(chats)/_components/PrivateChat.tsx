@@ -21,6 +21,7 @@ import ErrorPage from "./ErrorPage";
 import InfiniteScroll from "react-infinite-scroll-component";
 import Preview from "./Preview";
 import InfiniteLoader from "./InfiniteLoader";
+import useFeatures from "@/app/zustand/stores/feature";
 
 const PrivateChat = ({ id }: { id: string }) => {
   const queryClient = useQueryClient();
@@ -36,6 +37,7 @@ const PrivateChat = ({ id }: { id: string }) => {
   );
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isFetching, setIsFetching] = useState(false);
+  const { onlineUsers } = useFeatures((state) => state)
 
   const getLastMessageId = (messages: any) => {
     let oldestMessage: any = null;
@@ -115,6 +117,8 @@ const PrivateChat = ({ id }: { id: string }) => {
   const createMessage = (messageType: value, media?: File | null, message?: string) => {
     const tempMessageId = generateRandomChatId();
     const isGroup = data?.conversation.isGroup
+    const otherUser = data?.conversation.otherUser
+    const isUserInChat = onlineUsers.includes(otherUser._id)
 
     const tempMessage = {
       mesId: tempMessageId,
@@ -123,6 +127,8 @@ const PrivateChat = ({ id }: { id: string }) => {
         fullName: user?.user.fullName,
         profilePic: user?.user.profilePic,
       },
+      seenBy: isGroup ? [] : [otherUser._id],
+      isSeen: isGroup ? false : isUserInChat ? true : false,
       type: messageType,
       conversationId: id,
       ...(isGroup && {
@@ -134,9 +140,9 @@ const PrivateChat = ({ id }: { id: string }) => {
       isGroup,
       users: isGroup ? data?.conversation.groupUsers : [
         {
-          _id: data?.conversation.otherUser._id,
-          fullName: data?.conversation.otherUser.fullName,
-          profilePic: data?.conversation.otherUser.profilePic,
+          _id: otherUser._id,
+          fullName: otherUser.fullName,
+          profilePic: otherUser.profilePic,
         },
         {
           _id: user?.user.id,
@@ -146,7 +152,7 @@ const PrivateChat = ({ id }: { id: string }) => {
       ],
       roomId: id,
       createdAt: new Date(),
-      receiverId: isGroup ? id : data?.conversation.otherUser._id,
+      receiverId: isGroup ? id : otherUser._id,
       text: message,
       ...(messageType === "image" && media && {
         imageUrl: URL.createObjectURL(media),
@@ -196,12 +202,16 @@ const PrivateChat = ({ id }: { id: string }) => {
 
     socket?.emit("join-room", id)
 
+   
+
     // Cleanup listener on unmount
     return () => {
       socket?.off("message");
       socket?.off("leave-room")
     };
   }, [socket, id, queryClient]);
+
+  console.log(data?.conversation)
 
   const sendTextMessage = (
     message: string,
@@ -210,7 +220,6 @@ const PrivateChat = ({ id }: { id: string }) => {
     if (!message) return;
     try {
       const { tempMessage } = createMessage("text", null, message)
-
       updateMessageCache(tempMessage);
       socket?.emit(`message`, tempMessage);
       setMessage("");
