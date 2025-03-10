@@ -7,9 +7,9 @@ const ListAllGroups = ({ group, data }: { group: any, data: any }) => {
 
     // Function to format last message preview
     const renderLastMessage = () => {
-        if (!lastMessage) return `Start Conversation with ${groupName.slice(0, 5)}...`;
+        if (!lastMessage) return `Start Conversation in ${groupName.slice(0, 5)}...`;
 
-        const senderPrefix = lastMessage.sender?._id === data?.user.id ? "You: " : `${lastMessage.sender?.fullName.split(" ")[0]}: `;
+        const senderPrefix = lastMessage.sender?._id === data?.user.id ? "You: " : `${lastMessage?.sender?.fullName?.split(" ")[0]}: `;
 
         switch (lastMessage.type) {
             case "text":
@@ -23,7 +23,7 @@ const ListAllGroups = ({ group, data }: { group: any, data: any }) => {
             case "document":
                 return `${senderPrefix}sent a document`;
             default:
-                return `Start Conversation with ${groupName.slice(0, 5)}...`;
+                return `Start Conversation in ${groupName.slice(0, 5)}...`;
         }
     };
 
