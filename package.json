@@ -14,6 +14,7 @@
     "@radix-ui/react-label": "^2.1.2",
     "@radix-ui/react-slot": "^1.1.2",
     "@tanstack/react-query": "^5.66.7",
+    "@videojs/themes": "^1.0.1",
     "axios": "^1.7.9",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -33,6 +34,7 @@
     "socket.io-client": "^4.8.1",
     "tailwind-merge": "^3.0.1",
     "tailwindcss-animate": "^1.0.7",
+    "video.js": "^8.21.0",
     "zod": "^3.24.2",
     "zustand": "^5.0.3"
   },
@@ -41,6 +43,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/video.js": "^7.3.58",
     "eslint": "^9",
     "eslint-config-next": "15.1.7",
     "postcss": "^8",

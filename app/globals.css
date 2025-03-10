@@ -85,3 +85,21 @@
     @apply bg-background text-foreground;
   }
 }
+
+.video-js .vjs-control-bar {
+  /* background-color: rgba(0, 0, 0, 0.7); */
+  /* background-color: rgba(30, 30, 30, 0.4); backdrop-filter: blur(10px); */
+  background: #1E3A8A;
+  height: 50px !important; /* Adjust height */
+  border: none !important; /* Remove any borders */
+  box-shadow: none !important; /* Remove any shadows */
+}
+
+
+.video-js .vjs-control-bar {
+  background: rgba(48, 47, 47, 0.4); backdrop-filter: blur(10px) !important;  /* Force the background color */
+    /* Force the background color */
+  height: 50px !important;         /* Ensure height is applied */
+  border: none !important;         /* Remove any borders */
+  box-shadow: none !important;     /* Remove any shadows */
+}

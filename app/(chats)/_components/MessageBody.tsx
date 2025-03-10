@@ -4,6 +4,7 @@ import CircularProgress from "./CircularProgress";
 import axios from "axios";
 import { API } from "@/app/utils/constants";
 import { useSession } from "next-auth/react";
+import Video from "@/components/Video";
 
 const ManageImage = ({ msg }: { msg: any }) => (
   <div className="space-y-2 w-full max-w-[350px]">
@@ -122,13 +123,17 @@ const ManageVideo = ({ msg }: { msg: any }) => (
       <div className="relative rounded-md w-full aspect-video flex items-center justify-center">
         {/* Video Preview */}
         {msg.videoUrl && (
-          <video
-            src={msg.videoUrl}
-            poster={msg.videoUrl}
-            className="w-full h-full object-cover rounded-md"
-            muted
-            loop
-          />
+          // <video
+          //   src={msg.videoUrl}
+          //   poster={msg.videoUrl}
+          //   className="w-full h-full object-cover rounded-md"
+          //   muted
+          //   loop
+          // />
+          <div className="w-[300px] h-[200px]">
+             <Video url={msg.videoUrl}/>
+          </div>
+         
         )}
         {/* Upload Progress */}
         <div className="absolute inset-0 flex flex-col items-center justify-center p-4">
@@ -138,12 +143,16 @@ const ManageVideo = ({ msg }: { msg: any }) => (
     ) : (
       // Display final uploaded video
       <div className="relative w-full">
-        <video
+        {/* <video
           src={msg.videoUrl}
           poster={msg.videoUrl}
           className="w-full rounded-md"
           controls
-        />
+        /> */}
+        <div className="w-[350px] h-full">
+             <Video url={msg.videoUrl}/>
+          </div>
+         
       </div>
     )}
   </div>
