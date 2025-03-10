@@ -21,7 +21,6 @@ import ErrorPage from "./ErrorPage";
 import InfiniteScroll from "react-infinite-scroll-component";
 import Preview from "./Preview";
 import InfiniteLoader from "./InfiniteLoader";
-import useFeatures from "@/app/zustand/stores/feature";
 
 const PrivateChat = ({ id }: { id: string }) => {
   const queryClient = useQueryClient();
@@ -37,7 +36,9 @@ const PrivateChat = ({ id }: { id: string }) => {
   );
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isFetching, setIsFetching] = useState(false);
-  const { onlineUsers } = useFeatures((state) => state)
+  const [isUserInChat, setIsUserInChat] = useState(false);
+
+  // console.log(isUserInChat,"isUserInChat")
 
   const getLastMessageId = (messages: any) => {
     let oldestMessage: any = null;
@@ -114,11 +115,14 @@ const PrivateChat = ({ id }: { id: string }) => {
     }
   };
 
-  const createMessage = (messageType: value, media?: File | null, message?: string) => {
+  const createMessage = (
+    messageType: value,
+    media?: File | null,
+    message?: string
+  ) => {
     const tempMessageId = generateRandomChatId();
-    const isGroup = data?.conversation.isGroup
-    const otherUser = data?.conversation.otherUser
-    const isUserInChat = onlineUsers.includes(otherUser._id)
+    const isGroup = data?.conversation.isGroup;
+    const otherUser = data?.conversation.otherUser;
 
     const tempMessage = {
       mesId: tempMessageId,
@@ -127,59 +131,75 @@ const PrivateChat = ({ id }: { id: string }) => {
         fullName: user?.user.fullName,
         profilePic: user?.user.profilePic,
       },
-      seenBy: isGroup ? [] : [otherUser._id],
+      seenBy: isGroup ? [] : isUserInChat ? [otherUser._id] : [],
       isSeen: isGroup ? false : isUserInChat ? true : false,
+
       type: messageType,
       conversationId: id,
       ...(isGroup && {
         chatData: {
           chatName: data?.conversation.groupName,
-          profilePic: data?.conversation.groupPic
+          profilePic: data?.conversation.groupPic,
         },
       }),
       isGroup,
-      users: isGroup ? data?.conversation.groupUsers : [
-        {
-          _id: otherUser._id,
-          fullName: otherUser.fullName,
-          profilePic: otherUser.profilePic,
-        },
-        {
-          _id: user?.user.id,
-          fullName: user?.user.fullName,
-          profilePic: user?.user.profilePic
-        }
-      ],
+      users: isGroup
+        ? data?.conversation.groupUsers
+        : [
+          {
+            _id: otherUser._id,
+            fullName: otherUser.fullName,
+            profilePic: otherUser.profilePic,
+          },
+          {
+            _id: user?.user.id,
+            fullName: user?.user.fullName,
+            profilePic: user?.user.profilePic,
+          },
+        ],
       roomId: id,
       createdAt: new Date(),
       receiverId: isGroup ? id : otherUser._id,
       text: message,
-      ...(messageType === "image" && media && {
+      ...(messageType === "image" &&
+        media && {
         imageUrl: URL.createObjectURL(media),
         uploadProgress: 0,
       }),
-      ...(messageType === "video" && media && {
+      ...(messageType === "video" &&
+        media && {
         videoUrl: URL.createObjectURL(media),
         uploadProgress: 0,
       }),
-      ...(messageType === "document" && media
-        && {
+      ...(messageType === "document" &&
+        media && {
         document: {
           url: URL.createObjectURL(media),
           name: media.name,
           size: formatFileSize(media.size),
         },
-      }
-      ),
+      }),
     };
 
     return { tempMessage, tempMessageId };
   };
 
+  const getUnSeenMessage = (messages: any) => {
+
+    const unseenMessages = Object.values(messages)
+      .flat()
+      .filter((msg: any) => !msg.isSeen);
+
+    return unseenMessages;
+  };
+
   useEffect(() => {
-    if (!id || !socket) return
+    if (!id || !socket || !data || !data?.conversation.messages) return;
     socket?.on("message", (socketData) => {
-      if ((socketData?.conversationId === id) && (socketData.senderId._id !== user?.user.id)) {
+      if (
+        socketData?.conversationId === id &&
+        socketData.senderId._id !== user?.user.id
+      ) {
         queryClient.setQueryData(["getChat", id], (oldData: any) => {
           if (!oldData) return oldData;
           const formattedDate = formatDate(socketData.createdAt);
@@ -200,18 +220,21 @@ const PrivateChat = ({ id }: { id: string }) => {
       }
     });
 
-    socket?.emit("join-room", id)
+    socket.on("is-present-in-chat", (data) => {
+      setIsUserInChat(data?.isPresent);
+    });
 
-   
+    const unSeeenMessages = getUnSeenMessage(data.conversation.messages);
 
+    socket?.emit("join-room", id);
     // Cleanup listener on unmount
     return () => {
       socket?.off("message");
-      socket?.off("leave-room")
+      socket.off("is-present-in-chat");
+      socket?.emit("leave-room", id);
+      socket.emit("remove-user-from-chat", id);
     };
-  }, [socket, id, queryClient]);
-
-  console.log(data?.conversation)
+  }, [socket, id, queryClient, data]);
 
   const sendTextMessage = (
     message: string,
@@ -219,7 +242,7 @@ const PrivateChat = ({ id }: { id: string }) => {
   ) => {
     if (!message) return;
     try {
-      const { tempMessage } = createMessage("text", null, message)
+      const { tempMessage } = createMessage("text", null, message);
       updateMessageCache(tempMessage);
       socket?.emit(`message`, tempMessage);
       setMessage("");
@@ -316,7 +339,9 @@ const PrivateChat = ({ id }: { id: string }) => {
         (d: any) => d._id !== messageToSend?.conversationId
       );
 
-      updatedUsers = updatedChat ? [updatedChat, ...filteredUsers] : updatedUsers;
+      updatedUsers = updatedChat
+        ? [updatedChat, ...filteredUsers]
+        : updatedUsers;
       return {
         ...oldData,
         users: updatedUsers,
@@ -328,7 +353,7 @@ const PrivateChat = ({ id }: { id: string }) => {
     if (!media) return;
     setMessageType("text");
     try {
-      const { tempMessage, tempMessageId } = createMessage(messageType, media)
+      const { tempMessage, tempMessageId } = createMessage(messageType, media);
 
       // Add temp message to UI
       updateMessageCache(tempMessage);
@@ -387,7 +412,7 @@ const PrivateChat = ({ id }: { id: string }) => {
           ...tempMessage,
           ...(messageType === "image" && { imageUrl: actualUrl }),
           ...(messageType === "video" && { videoUrl: actualUrl }),
-          uploadProgress: undefined
+          uploadProgress: undefined,
         };
 
         // Replace the temporary message with the final one
@@ -465,7 +490,7 @@ const PrivateChat = ({ id }: { id: string }) => {
     setMessageType("text");
 
     try {
-      const { tempMessage, tempMessageId } = createMessage(messageType, media)
+      const { tempMessage, tempMessageId } = createMessage(messageType, media);
 
       // Add temp message to UI
       updateMessageCache(tempMessage);
@@ -527,7 +552,7 @@ const PrivateChat = ({ id }: { id: string }) => {
             name: media.name,
             size: formatFileSize(media.size),
           },
-          uploadProgress: undefined
+          uploadProgress: undefined,
         };
 
         // Replace the temporary message with the final one
@@ -605,10 +630,13 @@ const PrivateChat = ({ id }: { id: string }) => {
   return (
     <div className="flex flex-col flex-1 h-full">
       {/* Header */}
-      <MessageHeader data={data} socket={socket} userId={user?.user.id as string} />
+      <MessageHeader
+        data={data}
+        socket={socket}
+        userId={user?.user.id as string}
+      />
 
       <div className="flex-1 w-full overflow-y-auto">
-
         {messageType === "text" && (
           <div
             id="individualChats"
@@ -674,7 +702,11 @@ const PrivateChat = ({ id }: { id: string }) => {
       <InputText
         handleMessage={handleMessage}
         socket={socket}
-        roomId={data?.conversation.isGroup ? data?.conversation.conversationId : data?.conversation.otherUser._id}
+        roomId={
+          data?.conversation.isGroup
+            ? data?.conversation.conversationId
+            : data?.conversation.otherUser._id
+        }
         conversationId={id}
         isGroup={data?.conversation.isGroup}
         userFullName={user?.user.fullName as string}

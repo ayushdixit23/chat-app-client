@@ -35,13 +35,13 @@ const ManageImage = ({ msg }: { msg: any }) => (
 const ReadStatus = ({ isSeen }: { isSeen: boolean }) => {
   if (!isSeen) {
     // Single tick for sent but not seen
-    return <Check size={12} className="text-white" />;
+    return <Check size={14} className="text-black" />;
   } else {
     // Double tick for seen messages
     return (
       <div className="flex">
-        <Check size={12} className="text-white" />
-        <Check size={12} className="text-white -ml-1" />
+        <Check size={14} className="text-white" />
+        <Check size={14} className="text-white -ml-1" />
       </div>
     );
   }
@@ -113,11 +113,10 @@ const ManageDocument = ({
         </div>
       ) : (
         <button
-          className={`px-2 py-1 rounded-ful1 flex items-center gap-2 ${
-            isOwnMessage
+          className={`px-2 py-1 rounded-ful1 flex items-center gap-2 ${isOwnMessage
               ? "bg-blue-400 text-white"
               : "bg-gray-100 dark:bg-transparent dark:border dark:text-white text-gray-700"
-          } 
+            } 
         text-sm rounded-md hover:opacity-90 transition-all duration-200 
         ${isDownloading ? "opacity-50 cursor-not-allowed" : ""}`}
           onClick={handleDownload}
@@ -171,9 +170,8 @@ const MessageBody = ({
 }) => {
   return (
     <div
-      className={`flex items-end ${
-        isOwnMessage ? "justify-end" : "justify-start"
-      } space-x-2`}
+      className={`flex items-end ${isOwnMessage ? "justify-end" : "justify-start"
+        } space-x-2`}
     >
       {!isOwnMessage && (
         <div className="flex-shrink-0">
@@ -188,28 +186,21 @@ const MessageBody = ({
       )}
 
       <div
-        className={`flex flex-col ${
-          isOwnMessage ? "items-end" : "items-start"
-        }`}
+        className={`flex flex-col ${isOwnMessage ? "items-end" : "items-start"
+          }`}
       >
         <div
-          className={`relative inline-block max-w-[280px] md:max-w-[420px] ${
-            isOwnMessage
+          className={`relative inline-block max-w-[280px] md:max-w-[420px] ${isOwnMessage
               ? "bg-blue-500 text-white"
               : "bg-white dark:bg-transparent dark:text-white dark:border"
-          } px-4 py-3 rounded-xl shadow-sm`}
+            } px-4 py-3 rounded-xl shadow-sm`}
         >
           {msg.type === "text" && (
-            <p className="text-sm whitespace-pre-wrap break-words pb-2 pr-3">
+            <p className="text-sm whitespace-pre-wrap break-words ">
               {msg.text}
             </p>
           )}
 
-          {isOwnMessage && (
-            <div className="absolute p-2 pt-0 right-0 bottom-0">
-              <ReadStatus isSeen={msg.isSeen} />
-            </div>
-          )}
 
           {msg.type === "image" && <ManageImage msg={msg} />}
           {msg.type === "video" && <ManageVideo msg={msg} />}
@@ -217,14 +208,29 @@ const MessageBody = ({
             <ManageDocument msg={msg} isOwnMessage={isOwnMessage} />
           )}
         </div>
-        <span className="text-xs text-gray-500 dark:text-gray-400 mt-1 px-1">
+        {/* <span className="text-xs text-gray-500 dark:text-gray-400 mt-1 px-1">
           {new Date(msg.createdAt).toLocaleTimeString([], {
             hour: "2-digit",
             minute: "2-digit",
           })}
-        </span>
+        </span> */}
+
+<div className="flex items-center mt-1 px-1 space-x-2">
+          <span className="text-xs text-gray-500 dark:text-gray-400">
+            {new Date(msg.createdAt).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </span>
+          
+          {isOwnMessage && (
+            <ReadStatus isSeen={msg.isSeen} />
+          )}
+        </div>
       </div>
 
+
+     
       {isOwnMessage && (
         <div className="flex-shrink-0">
           <div className="w-10 h-10 rounded-full overflow-hidden ring-1 ring-gray-200 dark:ring-gray-700">

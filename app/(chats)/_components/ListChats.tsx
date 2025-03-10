@@ -31,7 +31,6 @@ const ListChats = () => {
       setOnlineUsers(data);
     });
 
-
     socket?.on("user-messages", (data) => {
       console.log(data?.isGroup)
       if (data?.isGroup) {
@@ -83,7 +82,7 @@ const ListChats = () => {
   return (
     <div className="overflow-y-auto flex-1" id="listChatDiv">
       <InfiniteScroll
-        dataLength={chatData?.users.length || 0}
+        dataLength={chatData?.users?.length || 0}
         next={fetchMoreChats}
         hasMore={chatData?.hasMore}
         loader={<InfiniteLoader />}
@@ -91,8 +90,10 @@ const ListChats = () => {
 
         style={{ display: "flex", flexDirection: "column" }} // Keeps the scroll behavior correct
       >
-        {chatData?.users.map((user: any) => (
-          <ListMiniComponent user={user} key={user._id} data={data} onlineUsers={onlineUsers} />
+        {chatData?.users?.map((user: any) => (
+          <ListMiniComponent user={user} key={user._id} data={data} onlineUsers={onlineUsers}
+            queryClient={queryClient}
+          />
         ))}
       </InfiniteScroll>
     </div>

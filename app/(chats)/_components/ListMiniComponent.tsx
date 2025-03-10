@@ -4,7 +4,6 @@ import React from "react";
 
 // Function to display the last message text based on its type
 
-
 const getLastMessageText = (lastMessage: any, user: any, currentUserId: string) => {
   if (!lastMessage.type) {
     return `Start Conversation ${user.isGroup ? "in" : "with"} ${user.chatName?.slice(0, 5)}...`;
@@ -36,29 +35,45 @@ const getLastMessageText = (lastMessage: any, user: any, currentUserId: string) 
   return "";
 };
 
-// Function to determine if the user is online
-const getOnlineStatus = (user: any, onlineUsers: string[]) => {
-  const otherUser = user.users.find((u: any) => u._id !== user.id);
-  return onlineUsers.includes(otherUser?._id) && !user.isGroup;
-};
 
 const ListMiniComponent = ({
   user,
   data,
   onlineUsers,
+  queryClient,
 }: {
   user: any;
   data: any;
   onlineUsers: string[];
+  queryClient: any
 }) => {
-  // Check if the other user in the conversation is online
-  const otherUserArray = user.users.filter((u: any) => u._id !== data.user.id);
-  const otherUserId = otherUserArray[0]._id;
-  const isOnline = getOnlineStatus(user, onlineUsers);
+  const otherUserArray = user.users.filter((u: any) => u._id !== data.user.id)
+  const otherUserId = otherUserArray[0]._id
+  const isOnline = onlineUsers.includes(otherUserId) && !user.isGroup;
+
+  const clearUnReadMessages = async (id: string) => {
+    queryClient.setQueryData(["allChats"], (oldData: any) => {
+      const dataChange = oldData.users.map((d: any) => {
+        if (d._id === id) {
+          return {
+            ...d,
+            unreadMessages: 0
+          }
+        } else {
+          return { ...d }
+        }
+      })
+      return {
+        ...oldData,
+        users: dataChange
+      }
+    });
+  }
 
   return (
     <Link
       href={`?id=${user._id}`}
+      onClick={() => clearUnReadMessages(user._id)}
       className="flex items-center p-4 light:hover:bg-gray-50 cursor-pointer border-b light:border-gray-100"
     >
       <div className="w-10 h-10 relative">
@@ -93,9 +108,9 @@ const ListMiniComponent = ({
             {getLastMessageText(user.lastMessage, user, data.user.id)}
           </p>
 
-          {user?.unread > 0 && (
-            <span className="bg-blue-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-              {user?.unread}
+          {user?.unreadMessages > 0 && (
+            <span className="bg-blue-500 text-white text-[10px] relative top-1 rounded-full h-5 w-5 flex items-center justify-center">
+              {user?.unreadMessages}
             </span>
           )}
         </div>
