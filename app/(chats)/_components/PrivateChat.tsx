@@ -38,8 +38,6 @@ const PrivateChat = ({ id }: { id: string }) => {
   const [isFetching, setIsFetching] = useState(false);
   const [isUserInChat, setIsUserInChat] = useState(false);
 
-  // console.log(isUserInChat,"isUserInChat")
-
   const getLastMessageId = (messages: any) => {
     let oldestMessage: any = null;
 
@@ -194,6 +192,7 @@ const PrivateChat = ({ id }: { id: string }) => {
 
   useEffect(() => {
     if (!id || !socket || !data || !data?.conversation.messages) return;
+
     socket?.on("message", (socketData) => {
       if (
         socketData?.conversationId === id &&
@@ -219,12 +218,12 @@ const PrivateChat = ({ id }: { id: string }) => {
       }
     });
 
-    socket.on("mark-message-seen",(data)=>{
+    socket.on("mark-message-seen", (data) => {
       const mesIdsToUpdate = JSON.parse(data)
-    
+
       queryClient.setQueryData(["getChat", id], (oldData: any) => {
         if (!oldData) return oldData;
-      
+
         return {
           ...oldData,
           conversation: {
@@ -233,10 +232,10 @@ const PrivateChat = ({ id }: { id: string }) => {
               acc[date] = oldData.conversation.messages[date].map((msg: any) =>
                 mesIdsToUpdate.includes(msg.mesId)
                   ? {
-                      ...msg,
-                      isSeen: true,
-                      seenBy: [...new Set([...msg.seenBy, user?.user.id])], // Ensure unique user IDs
-                    }
+                    ...msg,
+                    isSeen: true,
+                    seenBy: [...new Set([...msg.seenBy, user?.user.id])], // Ensure unique user IDs
+                  }
                   : msg
               );
               return acc;
@@ -244,6 +243,49 @@ const PrivateChat = ({ id }: { id: string }) => {
           },
         };
       });
+
+    })
+
+    socket.on("message:deleted-update", (data) => {
+      queryClient.setQueryData(["getChat", id], (oldData: any) => {
+        if (!oldData) return oldData;
+
+        const updatedMessages = { ...oldData.conversation.messages };
+
+        // Iterate through all messages and mark the specific one as deleted
+        Object.keys(updatedMessages).forEach((date) => {
+          updatedMessages[date] = updatedMessages[date].map((msg: any) =>
+            msg.mesId === data.mesId ? { ...msg, status: "deleted" } : msg
+          );
+        });
+
+        return {
+          ...oldData,
+          conversation: {
+            ...oldData.conversation,
+            messages: updatedMessages,
+          },
+        };
+      });
+
+      queryClient.setQueryData(["allChats"], (oldData: any) => {
+        if (!oldData || !oldData.users) return oldData; // Ensure oldData exists
+
+        const updatedChat = oldData.users.map((d: any) =>
+          d._id === id
+            ? {
+              ...d,
+              lastMessage:
+                d.lastMessage.mesId === data.mesId
+                  ? { ...d.lastMessage, status: "deleted" } // Update status correctly
+                  : { ...d.lastMessage },
+            }
+            : d
+        );
+
+        return { ...oldData, users: updatedChat };
+      });
+
 
     })
 
@@ -260,16 +302,15 @@ const PrivateChat = ({ id }: { id: string }) => {
         messages: unseenMessages,
         messageToSeenForUserId: user?.user.id,
         isGroup: data?.conversation.isGroup,
-        roomId:id
+        roomId: id,
+        actionType: "messageSeen"
       };
 
       const messageData = JSON.stringify(payload);
       socket.emit("messageToSeen", messageData);
     }
 
-
     socket.emit("check-user-in-chat", { roomId: id, ...(!data?.conversation.isGroup && { userId: data?.conversation.otherUser._id, fullName: data?.conversation.otherUser.fullName }) })
-
 
     // Cleanup listener on unmount
     return () => {
@@ -721,8 +762,11 @@ const PrivateChat = ({ id }: { id: string }) => {
                           return (
                             <MessageBody
                               key={index}
+                              allMessages={data?.conversation.data?.conversation?.messages}
+                              onReply={() => { console.log(`reply`) }}
                               isOwnMessage={isOwnMessage}
                               msg={msg}
+                              id={id}
                             />
                           );
                         }

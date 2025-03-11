@@ -2,15 +2,23 @@ import { extractHourMinutes } from "@/app/utils/helper";
 import Link from "next/link";
 import React from "react";
 
-// Function to display the last message text based on its type
-
 const getLastMessageText = (lastMessage: any, user: any, currentUserId: string) => {
-  if (!lastMessage.type) {
+
+  if (!lastMessage?.type) {
     return `Start Conversation ${user.isGroup ? "in" : "with"} ${user.chatName?.slice(0, 5)}...`;
   }
 
-  if (lastMessage.type === "text") {
-    return lastMessage.text
+  if (lastMessage?.status === "deleted") {
+    return `${lastMessage?.sender?._id === currentUserId
+      ? "You: "
+      : user.isGroup
+        ? `${lastMessage?.sender.fullName.split(" ")[0]}: `
+        : ""
+      }This message is deleted`;
+  }
+
+  if (lastMessage?.type === "text") {
+    return lastMessage?.text
       ? `${lastMessage.sender?._id === currentUserId
         ? "You: "
         : user.isGroup
@@ -99,16 +107,16 @@ const ListMiniComponent = ({
             {user.chatName.length > 20 ? `${user.chatName.slice(0, 20)}...` : user.chatName}
           </h3>
           <span className="text-xs dark:text-white text-gray-500">
-            {user.lastMessage.createdAt ? extractHourMinutes(user.lastMessage.createdAt) : ""}
+            {user.lastMessage?.createdAt ? extractHourMinutes(user?.lastMessage?.createdAt) : ""}
           </span>
         </div>
 
         <div className="flex justify-between">
-          <p className="text-xs mt-[4px] dark:text-white text-gray-500 truncate">
+          <p className={`${user.lastMessage?.status==="deleted" && "italic"} text-xs mt-[4px] dark:text-white text-gray-500 truncate`}>
             {getLastMessageText(user.lastMessage, user, data.user.id)}
           </p>
 
-          {user?.unreadMessages > 0  && (
+          {user?.unreadMessages > 0 && (
             <span className="bg-blue-500 text-white text-[10px] relative top-1 rounded-full h-5 w-5 flex items-center justify-center">
               {user?.unreadMessages}
             </span>

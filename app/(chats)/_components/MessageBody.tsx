@@ -1,10 +1,116 @@
-import { File, Download, Check, Loader } from "lucide-react";
+import {
+  File,
+  Download,
+  Check,
+  Loader,
+  MoreVertical,
+  Reply,
+  Trash2,
+} from "lucide-react";
 import React, { useState } from "react";
 import CircularProgress from "./CircularProgress";
 import axios from "axios";
 import { API } from "@/app/utils/constants";
 import { useSession } from "next-auth/react";
 import Video from "@/components/Video";
+import { motion, AnimatePresence } from "framer-motion";
+import DeleteMessageModal from "./DeleteMessageModal";
+
+const MessageOptions = ({
+  isOwnMessage,
+  msg,
+  onReply,
+  id,
+  allMessages,
+}: {
+  isOwnMessage: boolean;
+  msg: any;
+  onReply: (message: any) => void;
+  id: string
+  allMessages:any
+}) => {
+  const [showOptions, setShowOptions] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+
+  const toggleOptions = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent event bubbling
+    setShowOptions(!showOptions);
+  };
+
+  const handleReply = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onReply(msg);
+    setShowOptions(false);
+  };
+
+  const openDeleteModal = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsDeleteModalOpen(true)
+    setShowOptions(false);
+  };
+
+  const closeDeleteModal = () => setIsDeleteModalOpen(false)
+
+  return (
+    <>
+      <div onClick={() => setShowOptions(false)} className={`fixed inset-0 w-full h-full ${showOptions ? "z-10" : "-z-10"} `}>
+
+      </div>
+      <div className="relative w-full flex z-10 justify-end items-end">
+        <button
+          onClick={toggleOptions}
+          className={`p-1 rounded-full transition-all duration-200 ${isOwnMessage
+            ? "text-white "
+            : "text-gray-600 dark:text-gray-400"
+            }`}
+        >
+          <MoreVertical size={16} />
+        </button>
+
+        <AnimatePresence>
+          {showOptions && (
+            <motion.div
+              initial={{ opacity: 0, y: -10, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -10, scale: 0.95 }}
+              transition={{ duration: 0.2 }}
+              className={`absolute z-10 ${isOwnMessage ? "right-0" : "left-0"
+                } mt-1 w-32 bg-white dark:bg-[#0d0d0d] rounded-md shadow-lg py-1 border  `}
+            >
+              <motion.button
+                whileHover={{ backgroundColor: "rgba(0,0,0,0.05)" }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleReply}
+                className="w-full text-left px-3 py-2 text-sm text-gray-700 dark:text-gray-300 flex items-center gap-2"
+              >
+                <Reply size={14} />
+                Reply
+              </motion.button>
+              <motion.button
+                whileHover={{ backgroundColor: "rgba(0,0,0,0.05)" }}
+                whileTap={{ scale: 0.98 }}
+                onClick={openDeleteModal}
+                className="w-full text-left px-3 py-2 text-sm text-red-600 flex items-center gap-2"
+              >
+                <Trash2 size={14} />
+                Delete
+              </motion.button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+        <DeleteMessageModal
+          isOpen={isDeleteModalOpen}
+          allMessages={allMessages}
+          onClose={closeDeleteModal}
+          message={msg}
+          id={id}
+        />
+
+      </div>
+    </>
+
+  );
+};
 
 const ManageImage = ({ msg }: { msg: any }) => (
   <div className="space-y-2 w-full max-w-[350px]">
@@ -114,8 +220,8 @@ const ManageDocument = ({
       ) : (
         <button
           className={`px-2 py-1 rounded-ful1 flex items-center gap-2 ${isOwnMessage
-              ? "bg-blue-400 text-white"
-              : "bg-gray-100 dark:bg-transparent dark:border dark:text-white text-gray-700"
+            ? "bg-blue-400 text-white"
+            : "bg-gray-100 dark:bg-transparent dark:border dark:text-white text-gray-700"
             } 
         text-sm rounded-md hover:opacity-90 transition-all duration-200 
         ${isDownloading ? "opacity-50 cursor-not-allowed" : ""}`}
@@ -164,9 +270,15 @@ const ManageVideo = ({ msg }: { msg: any }) => (
 const MessageBody = ({
   isOwnMessage,
   msg,
+  onReply,
+  id,
+  allMessages,
 }: {
   isOwnMessage: boolean;
   msg: any;
+  onReply: (message: any) => void;
+  id: string
+  allMessages:any
 }) => {
   return (
     <div
@@ -190,47 +302,54 @@ const MessageBody = ({
           }`}
       >
         <div
-          className={`relative inline-block max-w-[280px] md:max-w-[420px] ${isOwnMessage
-              ? "bg-blue-500 text-white"
-              : "bg-white dark:bg-transparent dark:text-white dark:border"
-            } px-4 py-3 rounded-xl shadow-sm`}
+          className={`relative flex justify-between items-center w-full max-w-[280px] md:max-w-[420px] ${isOwnMessage
+            ? "bg-blue-500 text-white"
+            : "bg-white dark:bg-transparent dark:text-white dark:border"
+            }  rounded-xl shadow-sm`}
         >
-          {msg.type === "text" && (
-            <p className="text-sm whitespace-pre-wrap break-words ">
-              {msg.text}
-            </p>
-          )}
+          <div className="w-[90%] px-4 py-3">
 
+            {msg.status === "deleted" ? (
+              <p className="text-sm italic whitespace-pre-wrap break-words">
+                This message is deleted
+              </p>
+            ) : (
+              <>
+                {msg.type === "text" && (
+                  <p className="text-sm whitespace-pre-wrap break-words">{msg.text}</p>
+                )}
+                {msg.type === "image" && <ManageImage msg={msg} />}
+                {msg.type === "video" && <ManageVideo msg={msg} />}
+                {msg.type === "document" && (
+                  <ManageDocument msg={msg} isOwnMessage={isOwnMessage} />
+                )}
+              </>
+            )}
+          </div>
 
-          {msg.type === "image" && <ManageImage msg={msg} />}
-          {msg.type === "video" && <ManageVideo msg={msg} />}
-          {msg.type === "document" && (
-            <ManageDocument msg={msg} isOwnMessage={isOwnMessage} />
-          )}
+          <div className="pr-1">
+            <MessageOptions
+              isOwnMessage={isOwnMessage}
+              msg={msg}
+              id={id}
+              onReply={onReply}
+              allMessages={allMessages}
+            />
+          </div>
         </div>
-        {/* <span className="text-xs text-gray-500 dark:text-gray-400 mt-1 px-1">
-          {new Date(msg.createdAt).toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          })}
-        </span> */}
 
-<div className="flex items-center mt-1 px-1 space-x-2">
+        <div className="flex items-center mt-1 px-1 space-x-2">
           <span className="text-xs text-gray-500 dark:text-gray-400">
             {new Date(msg.createdAt).toLocaleTimeString([], {
               hour: "2-digit",
               minute: "2-digit",
             })}
           </span>
-          
-          {isOwnMessage && (
-            <ReadStatus isSeen={msg.isSeen} />
-          )}
+
+          {isOwnMessage && msg.status !== "deleted" && <ReadStatus isSeen={msg.isSeen} />}
         </div>
       </div>
 
-
-     
       {isOwnMessage && (
         <div className="flex-shrink-0">
           <div className="w-10 h-10 rounded-full overflow-hidden ring-1 ring-gray-200 dark:ring-gray-700">

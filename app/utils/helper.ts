@@ -71,8 +71,6 @@ export const updateChats = (oldData: any, data: any, key: string, user?: any, is
 
   if (!oldData) return oldData;
 
-  console.log(oldData, "oldData", data, "data")
-
   const lastMessage = {
     type: data?.type,
     text: data?.text,
