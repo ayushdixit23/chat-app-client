@@ -188,7 +188,7 @@ const PrivateChat = ({ id }: { id: string }) => {
     const unseenMessages = Object.values(messages)
       .flat()
       .filter((msg: any) => !msg.seenBy.includes(user?.user.id));
-  
+
     return unseenMessages;
   };
 
@@ -219,15 +219,58 @@ const PrivateChat = ({ id }: { id: string }) => {
       }
     });
 
+    socket.on("mark-message-seen",(data)=>{
+      const mesIdsToUpdate = JSON.parse(data)
+    
+      queryClient.setQueryData(["getChat", id], (oldData: any) => {
+        if (!oldData) return oldData;
+      
+        return {
+          ...oldData,
+          conversation: {
+            ...oldData.conversation,
+            messages: Object.keys(oldData.conversation.messages).reduce((acc: any, date) => {
+              acc[date] = oldData.conversation.messages[date].map((msg: any) =>
+                mesIdsToUpdate.includes(msg.mesId)
+                  ? {
+                      ...msg,
+                      isSeen: true,
+                      seenBy: [...new Set([...msg.seenBy, user?.user.id])], // Ensure unique user IDs
+                    }
+                  : msg
+              );
+              return acc;
+            }, {}),
+          },
+        };
+      });
+
+    })
+
     socket.on("is-present-in-chat", (data) => {
       setIsUserInChat(data?.isPresent);
     });
-    const unseenMessages = getUnSeenMessage(data.conversation.messages);
-
-    console.log(unseenMessages);
 
     socket?.emit("join-room", id);
+
+    const unseenMessages = getUnSeenMessage(data.conversation.messages);
+
+    if (unseenMessages.length > 0) {
+      const payload = {
+        messages: unseenMessages,
+        messageToSeenForUserId: user?.user.id,
+        isGroup: data?.conversation.isGroup,
+        roomId:id
+      };
+
+      const messageData = JSON.stringify(payload);
+      socket.emit("messageToSeen", messageData);
+    }
+
+
     socket.emit("check-user-in-chat", { roomId: id, ...(!data?.conversation.isGroup && { userId: data?.conversation.otherUser._id, fullName: data?.conversation.otherUser.fullName }) })
+
+
     // Cleanup listener on unmount
     return () => {
       socket?.off("message");

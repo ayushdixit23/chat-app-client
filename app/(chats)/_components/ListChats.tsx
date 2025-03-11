@@ -12,16 +12,16 @@ import { useSession } from 'next-auth/react';
 import InfiniteLoader from './InfiniteLoader';
 import { useSocketContext } from '@/components/providers/socket';
 import useFeatures from '@/app/zustand/stores/feature';
-import { updateChats } from '@/app/utils/helper';
+import { formatDate, updateChats } from '@/app/utils/helper';
 
-const ListChats = () => {
+const ListChats = ({ searchParamsId }: { searchParamsId: string }) => {
   const {
     data: chatData,
     isError,
     isLoading,
     error,
   } = useQuery({ queryKey: ["allChats"], queryFn: getAllChats });
-  const { data } = useSession()
+  const { data: userData } = useSession()
   const { socket } = useSocketContext()
   const queryClient = useQueryClient();
   const { onlineUsers, setOnlineUsers } = useFeatures((state) => state)
@@ -35,27 +35,48 @@ const ListChats = () => {
       console.log(data?.isGroup)
       if (data?.isGroup) {
         queryClient.setQueryData(["getGroups"], (oldData: any) =>
-          updateChats(oldData, data, "groups")
+          updateChats(oldData, data, "groups", userData,data.conversationId===searchParamsId)
         );
       }
 
       // Update individual chats (DMs)
       queryClient.setQueryData(["allChats"], (oldData: any) =>
-        updateChats(oldData, data, "users")
+        updateChats(oldData, data, "users", userData,data.conversationId===searchParamsId)
       );
+
+      if (searchParamsId !== data?.conversationId) {
+        queryClient.setQueryData(["getChat", data?.conversationId], (oldData: any) => {
+          if (!oldData) return oldData;
+          const formattedDate = formatDate(data.createdAt);
+          return {
+            ...oldData,
+            conversation: {
+              ...oldData.conversation,
+              messages: {
+                ...oldData.conversation.messages,
+                [formattedDate]: [
+                  ...(oldData?.conversation?.messages?.[formattedDate] || []),
+                  data,
+                ],
+              },
+            },
+          };
+        });
+      }
+
     });
 
     return () => {
       socket?.off("online-users");
       socket?.off("user-messages");
     };
-  }, [socket, queryClient]);
+  }, [socket, queryClient, searchParamsId]);
 
   const fetchMoreChats = async () => {
     try {
       const res = await axios.get(`${API}/chats/getMoreChats?conversationIds=${JSON.stringify(chatData.conversationIds)}`, {
         headers: {
-          Authorization: `Bearer ${data?.user.accessToken}`
+          Authorization: `Bearer ${userData?.user.accessToken}`
         }
       })
       const newUsers = res.data.users
@@ -91,7 +112,7 @@ const ListChats = () => {
         style={{ display: "flex", flexDirection: "column" }} // Keeps the scroll behavior correct
       >
         {chatData?.users?.map((user: any) => (
-          <ListMiniComponent user={user} key={user._id} data={data} onlineUsers={onlineUsers}
+          <ListMiniComponent user={user} key={user._id} data={userData} onlineUsers={onlineUsers}
             queryClient={queryClient}
           />
         ))}

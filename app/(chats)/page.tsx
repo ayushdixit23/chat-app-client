@@ -37,7 +37,7 @@ const Page =async ({
           </div>
         </div>
 
-        <ListChats />
+        <ListChats searchParamsId={currSearchParams?.id as string}/>
       </div>
 
       {currSearchParams?.id ? (

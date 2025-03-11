@@ -67,8 +67,11 @@ export const extractHourMinutes = (isoString: string): string => {
 };
 
 
-export const updateChats = (oldData: any, data: any, key: string) => {
+export const updateChats = (oldData: any, data: any, key: string, user?: any, isUserinChat?: boolean) => {
+
   if (!oldData) return oldData;
+
+  console.log(oldData, "oldData", data, "data")
 
   const lastMessage = {
     type: data?.type,
@@ -77,6 +80,8 @@ export const updateChats = (oldData: any, data: any, key: string) => {
     createdAt: data?.createdAt,
   };
 
+  const isSeen = data.seenBy.includes(user?.user.id);
+
   // Find existing chat
   const existingChat = oldData[key]?.find((d: any) => d._id === data?.conversationId);
 
@@ -84,7 +89,7 @@ export const updateChats = (oldData: any, data: any, key: string) => {
 
   if (existingChat) {
     updatedChats = oldData[key].map((d: any) =>
-      d._id === data?.conversationId ? { ...d, lastMessage } : d
+      d._id === data?.conversationId ? { ...d, lastMessage, unreadMessages: isSeen ? 0 : isUserinChat ? 0 : d.unreadMessages + 1 } : d
     );
 
     // Move updated chat to the top
@@ -98,6 +103,7 @@ export const updateChats = (oldData: any, data: any, key: string) => {
       chatName: data?.isGroup ? data?.chatData.chatName : data?.senderId.fullName,
       profilePic: data?.isGroup ? data?.chatData.profilePic : data?.senderId.profilePic,
       lastMessage,
+      unreadMessages: 1,
       users: data?.users,
     };
 

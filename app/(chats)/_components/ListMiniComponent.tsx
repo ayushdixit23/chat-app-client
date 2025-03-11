@@ -108,7 +108,7 @@ const ListMiniComponent = ({
             {getLastMessageText(user.lastMessage, user, data.user.id)}
           </p>
 
-          {user?.unreadMessages > 0 && (
+          {user?.unreadMessages > 0  && (
             <span className="bg-blue-500 text-white text-[10px] relative top-1 rounded-full h-5 w-5 flex items-center justify-center">
               {user?.unreadMessages}
             </span>

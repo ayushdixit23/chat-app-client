@@ -4,7 +4,21 @@ const nextConfig: NextConfig = {
   /* config options here */
   reactStrictMode:false,
   images: {
-    domains: ["d317fpcin2orjd.cloudfront.net", "lh3.googleusercontent.com","cdn.jsdelivr.net"],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'd317fpcin2orjd.cloudfront.net',
+       
+      },
+      {
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'cdn.jsdelivr.net',
+      },
+    ],
   },
 };
 
