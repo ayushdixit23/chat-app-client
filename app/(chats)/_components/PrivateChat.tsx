@@ -131,7 +131,7 @@ const PrivateChat = ({ id }: { id: string }) => {
         fullName: user?.user.fullName,
         profilePic: user?.user.profilePic,
       },
-      seenBy: isGroup ? [] : isUserInChat ? [otherUser._id] : [],
+      seenBy: isGroup ? [] : isUserInChat ? [otherUser._id, user?.user.id] : [user?.user.id],
       isSeen: isGroup ? false : isUserInChat ? true : false,
 
       type: messageType,
@@ -185,11 +185,10 @@ const PrivateChat = ({ id }: { id: string }) => {
   };
 
   const getUnSeenMessage = (messages: any) => {
-
     const unseenMessages = Object.values(messages)
       .flat()
-      .filter((msg: any) => !msg.isSeen);
-
+      .filter((msg: any) => !msg.seenBy.includes(user?.user.id));
+  
     return unseenMessages;
   };
 
@@ -223,16 +222,18 @@ const PrivateChat = ({ id }: { id: string }) => {
     socket.on("is-present-in-chat", (data) => {
       setIsUserInChat(data?.isPresent);
     });
+    const unseenMessages = getUnSeenMessage(data.conversation.messages);
 
-    const unSeeenMessages = getUnSeenMessage(data.conversation.messages);
+    console.log(unseenMessages);
 
     socket?.emit("join-room", id);
+    socket.emit("check-user-in-chat", { roomId: id, ...(!data?.conversation.isGroup && { userId: data?.conversation.otherUser._id, fullName: data?.conversation.otherUser.fullName }) })
     // Cleanup listener on unmount
     return () => {
       socket?.off("message");
       socket.off("is-present-in-chat");
       socket?.emit("leave-room", id);
-      socket.emit("remove-user-from-chat", id);
+      socket.off("join-room")
     };
   }, [socket, id, queryClient, data]);
 

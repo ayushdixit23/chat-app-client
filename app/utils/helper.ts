@@ -103,6 +103,5 @@ export const updateChats = (oldData: any, data: any, key: string) => {
 
     updatedChats = [newChat, ...oldData[key]];
   }
-  console.log({ ...oldData, [key]: updatedChats })
   return { ...oldData, [key]: updatedChats };
 };

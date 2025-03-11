@@ -35,7 +35,7 @@ const ManageImage = ({ msg }: { msg: any }) => (
 const ReadStatus = ({ isSeen }: { isSeen: boolean }) => {
   if (!isSeen) {
     // Single tick for sent but not seen
-    return <Check size={14} className="text-black" />;
+    return <Check size={14} className="text-white" />;
   } else {
     // Double tick for seen messages
     return (
