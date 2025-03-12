@@ -38,6 +38,7 @@ const PrivateChat = ({ id }: { id: string }) => {
   const [isFetching, setIsFetching] = useState(false);
   const [isUserInChat, setIsUserInChat] = useState(false);
 
+
   const getLastMessageId = (messages: any) => {
     let oldestMessage: any = null;
 
@@ -291,6 +292,10 @@ const PrivateChat = ({ id }: { id: string }) => {
 
     socket.on("is-present-in-chat", (data) => {
       setIsUserInChat(data?.isPresent);
+    }); 
+
+    socket.on("block-user-update", (data: any) => {
+      queryClient.invalidateQueries({queryKey:["getChat", data?.roomId]}); 
     });
 
     socket?.emit("join-room", id);
@@ -709,6 +714,62 @@ const PrivateChat = ({ id }: { id: string }) => {
     }
   };
 
+  const clearChats = () => {
+
+    const messages = Object.values(data.conversation.messages)
+      .flat()
+      .map((msg: any) => msg.mesId);
+
+    console.log(messages, "messages")
+    const payload = {
+      messages,
+      userId: user?.user.id,
+      actionType: "clearChat"
+    }
+    socket?.emit("clear:chat", JSON.stringify(payload))
+
+    queryClient.setQueryData(["getChat", id], (oldData: any) => {
+      if (!oldData) return oldData;
+      return {
+        ...oldData,
+        conversation: {
+          ...oldData.conversation,
+          messages: [],
+        },
+      };
+    });
+
+    queryClient.setQueryData(["allChats"], (allChatsData: any) => {
+      if (!allChatsData || !allChatsData.users) return allChatsData;
+
+      const updatedChats = allChatsData.users.map((d: any) =>
+        d._id === id ? { ...d, lastMessage: null } : d
+      );
+
+      return { ...allChatsData, users: updatedChats };
+    });
+
+
+  }
+
+  const blockOrUnBlockUser = () => {
+    const isBlockedByYou = data?.conversation.isBlockedByYou
+    queryClient.setQueryData(["getChat", id], (oldData: any) => {
+      if (!oldData) return oldData;
+
+      const newIsBlockedByYou = !oldData.conversation.isBlockedByYou;
+
+      return {
+        ...oldData,
+        conversation: {
+          ...oldData.conversation,
+          isBlockedByYou: newIsBlockedByYou,
+        },
+      };
+    });
+    socket?.emit("block:user", { action: isBlockedByYou ? "unblock" : "block", roomId: id, userId: user?.user.id, actionType: "blockOrUnblock" });
+  };
+  
   if (isLoading) return <Loader />;
   if (isError) return <ErrorPage message={error.message} />;
 
@@ -716,6 +777,8 @@ const PrivateChat = ({ id }: { id: string }) => {
     <div className="flex flex-col flex-1 h-full">
       {/* Header */}
       <MessageHeader
+        clearChats={clearChats}
+        blockOrUnBlockUser={blockOrUnBlockUser}
         data={data}
         socket={socket}
         userId={user?.user.id as string}
@@ -795,6 +858,8 @@ const PrivateChat = ({ id }: { id: string }) => {
             ? data?.conversation.conversationId
             : data?.conversation.otherUser._id
         }
+        isBlockedByYou={data?.conversation.isBlockedByYou}
+        isBlockedByUser={data?.conversation.isBlockedByUser}
         conversationId={id}
         isGroup={data?.conversation.isGroup}
         userFullName={user?.user.fullName as string}

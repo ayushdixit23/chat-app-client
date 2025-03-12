@@ -1,8 +1,8 @@
-
-import { Send } from "lucide-react";
+import { Send, Lock, AlertTriangle } from "lucide-react";
 import React, { useState } from "react";
 import { Socket } from "socket.io-client";
 import DropdownButton from "./DropdownButton";
+import { motion, AnimatePresence } from "framer-motion";
 
 const InputText = ({
   handleMessage,
@@ -11,7 +11,9 @@ const InputText = ({
   conversationId,
   isGroup,
   userFullName,
-  senderId
+  senderId,
+  isBlockedByYou,
+  isBlockedByUser
 }: {
   handleMessage: (
     message: string,
@@ -22,7 +24,9 @@ const InputText = ({
   conversationId: string;
   isGroup: boolean;
   userFullName: string;
-  senderId:string
+  senderId: string;
+  isBlockedByYou: boolean;
+  isBlockedByUser: boolean;
 }) => {
   const [message, setMessage] = useState("");
   const [isTyping, setIsTyping] = useState(false);
@@ -38,7 +42,7 @@ const InputText = ({
     clearTimeout(typingTimeout);
     typingTimeout = setTimeout(() => {
       setIsTyping(false);
-      socket?.emit("not-typing", { roomId, conversationId, isGroup, fullName: userFullName,senderId });
+      socket?.emit("not-typing", { roomId, conversationId, isGroup, fullName: userFullName, senderId });
     }, 2500);
   };
 
@@ -48,33 +52,82 @@ const InputText = ({
   };
 
   const handleMessageWithTyping = () => {
-    socket?.emit("not-typing", { roomId, conversationId, isGroup, fullName: userFullName,senderId });
+    socket?.emit("not-typing", { roomId, conversationId, isGroup, fullName: userFullName, senderId });
     handleMessage(message, setMessage);
   };
 
+  // Check if any blocking is happening
+  const isBlocked = isBlockedByYou || isBlockedByUser;
+
+  // Determine blocking message
+  const getBlockMessage = () => {
+    if (isBlockedByYou && isBlockedByUser) {
+      return "You both have blocked each other";
+    } else if (isBlockedByYou) {
+      return "You have blocked this user";
+    } else if (isBlockedByUser) {
+      return "You have been blocked by this user";
+    }
+    return "";
+  };
+
+  // console.log(isBlockedByUser, isBlockedByYou, "isBlockedByUser", "isBlockedByYou")
+
   return (
-    <div className="p-3 flex items-center gap-2 bg-white dark:bg-[#0d0d0d] dark:text-white border-t light:border-gray-200">
-      <DropdownButton />
-      <div className="flex flex-1 items-center space-x-2">
-        <input
-          type="text"
-          value={message}
-          onChange={handleMessageChange}
-          placeholder="Type a message..."
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              handleMessageWithTyping();
-            }
-          }}
-          className="flex-1 p-3 border light:border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 dark:bg-transparent bg-gray-50"
-        />
-        <button
-          className="p-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none"
-          onClick={handleMessageWithTyping}
-        >
-          <Send className="h-5 w-5" />
-        </button>
-      </div>
+    <div className="bg-white dark:bg-[#0d0d0d] dark:text-white border-t light:border-gray-200">
+      <AnimatePresence>
+        {isBlocked ? (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            className="p-4 flex items-center justify-center"
+          >
+            <div className="flex items-center justify-center bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400 p-3 rounded-lg w-full">
+              <Lock className="h-5 w-5 mr-2" />
+              <span className="font-medium">{getBlockMessage()}</span>
+
+            </div>
+          </motion.div>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            className="p-3 flex items-center gap-2"
+          >
+            <DropdownButton />
+            <div className="flex flex-1 items-center space-x-2">
+              <input
+                type="text"
+                value={message}
+                onChange={handleMessageChange}
+                placeholder="Type a message..."
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    handleMessageWithTyping();
+                  }
+                }}
+                className="flex-1 p-3 border light:border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 dark:bg-transparent bg-gray-50"
+              />
+              <motion.button
+                className="p-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none"
+                onClick={handleMessageWithTyping}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                disabled={message.trim() === ""}
+                initial={{ opacity: 0.9 }}
+                animate={{
+                  opacity: message.trim() === "" ? 0.7 : 1,
+                  backgroundColor: message.trim() === "" ? "#60a5fa" : "#3b82f6"
+                }}
+              >
+                <Send className="h-5 w-5" />
+              </motion.button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
