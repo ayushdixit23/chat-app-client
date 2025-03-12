@@ -89,62 +89,75 @@ const DeleteMessageModal: React.FC<DeleteMessageModalProps> = ({
     });
     onClose();
   };
-
+  
   const onDeleteForMe = () => {
     queryClient.setQueryData(["getChat", id], (oldData: any) => {
-        if (!oldData || !oldData.conversation?.messages) return oldData;
-      
-        let lastMessage: any = null; // To store the last valid message
-        const updatedMessages = { ...oldData.conversation.messages };
-      
-        Object.keys(updatedMessages).forEach((date) => {
-          let messages = updatedMessages[date];
-      
-          messages = messages.filter((msg: any, index: number) => {
-            if (msg.mesId === message.mesId) {
-            
-            lastMessage = messages[index - 1] || lastMessage; 
-            if(lastMessage){
-                lastMessage.sender = lastMessage.senderId
+      if (!oldData || !oldData.conversation?.messages) return oldData;
+  
+      let lastMessage: any = null;
+      const updatedMessages = { ...oldData.conversation.messages };
+  
+      Object.keys(updatedMessages).forEach((date, dateIndex, keys) => {
+        let messages = updatedMessages[date];
+  
+        messages = messages.filter((msg: any, index: number) => {
+          if (msg.mesId === message.mesId) {
+            return false;
+          }
+          return true;
+        });
+  
+        if (messages.length === 0) {
+          delete updatedMessages[date];
+  
+          // Find last non-empty key
+          for (let i = dateIndex - 1; i >= 0; i--) {
+            const prevDate = keys[i];
+            if (updatedMessages[prevDate] && updatedMessages[prevDate].length > 0) {
+              lastMessage = updatedMessages[prevDate][updatedMessages[prevDate].length - 1];
+              break;
             }
-              return false;
-            }
-            return true;
-          });
-      
+          }
+        } else {
           updatedMessages[date] = messages;
-        });
-      
-        // Update `allChats` with the extracted last message
-        queryClient.setQueryData(["allChats"], (allChatsData: any) => {
-          if (!allChatsData || !allChatsData.users) return allChatsData;
-      
-          const updatedChats = allChatsData.users.map((d: any) =>
-            d._id === id ? { ...d, lastMessage } : d
-          );
-      
-          return { ...allChatsData, users: updatedChats };
-        });
-      
-        return {
-          ...oldData,
-          conversation: {
-            ...oldData.conversation,
-            messages: updatedMessages,
-          },
-        };
+          lastMessage = messages[messages.length - 1]; // Update lastMessage from current key
+        }
       });
-      
+  
+      if (lastMessage) {
+        lastMessage.sender = lastMessage.senderId;
+      }
+  
 
+      queryClient.setQueryData(["allChats"], (allChatsData: any) => {
+        if (!allChatsData || !allChatsData.users) return allChatsData;
+  
+        const updatedChats = allChatsData.users.map((d: any) =>
+          d._id === id ? { ...d, lastMessage } : d
+        );
+  
+        return { ...allChatsData, users: updatedChats };
+      });
+  
+      return {
+        ...oldData,
+        conversation: {
+          ...oldData.conversation,
+          messages: updatedMessages,
+        },
+      };
+    });
+  
     socket?.emit("message:deleted", {
       roomId: id,
       userId: userData?.user.id,
       mesId: message.mesId,
       action: "deleteForMe",
     });
+  
     onClose();
   };
-
+  
   if (!mounted) return null;
 
   return (
