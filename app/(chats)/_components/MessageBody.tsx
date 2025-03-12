@@ -19,18 +19,23 @@ import DeleteMessageModal from "./DeleteMessageModal";
 const MessageOptions = ({
   isOwnMessage,
   msg,
-  onReply,
+  // onReply,
   id,
   allMessages,
+  setIsReplyOpen,
+  setReplyMessage
 }: {
   isOwnMessage: boolean;
   msg: any;
-  onReply: (message: any) => void;
+  // onReply: (message: any) => void;
   id: string
-  allMessages:any
+  allMessages: any,
+  setIsReplyOpen: (value: boolean) => void
+  setReplyMessage: (value: any) => void
 }) => {
   const [showOptions, setShowOptions] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+
 
   const toggleOptions = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent event bubbling
@@ -39,7 +44,9 @@ const MessageOptions = ({
 
   const handleReply = (e: React.MouseEvent) => {
     e.stopPropagation();
-    onReply(msg);
+    // onReply(msg);
+    setIsReplyOpen(true)
+    setReplyMessage(msg)
     setShowOptions(false);
   };
 
@@ -267,18 +274,86 @@ const ManageVideo = ({ msg }: { msg: any }) => (
   </div>
 );
 
+// ManageReply component to handle reply-type messages
+const ManageReply = ({ msg, isOwnMessage }: { msg: any, isOwnMessage: any }) => {
+  const originalMessage = msg.replyMessage;
+
+  // Check if we have valid reply data
+  if (!originalMessage) {
+    return (
+      <div className="text-sm whitespace-pre-wrap break-words">
+        {msg.text}
+      </div>
+    );
+  }
+
+  const originalSenderName = originalMessage.senderId?.fullName || "Unknown user";
+
+
+  // Determine the display text for the original message
+  const originalText = originalMessage.text
+ 
+    // Scroll to the original message
+    const handleScrollToOriginal = () => {
+      const originalMsgElement = document.getElementById(`message-${originalMessage.mesId}`);
+     
+      if (originalMsgElement) {
+        originalMsgElement.scrollIntoView({ behavior: "smooth", block: "center" });
+
+        originalMsgElement.classList.add("highlight");
+  
+        // Remove highlight after 1.5 seconds
+        setTimeout(() => {
+          originalMsgElement.classList.remove("highlight");
+        }, 1500);
+      }
+      }
+  
+
+  return (
+    <div className="flex flex-col space-y-2">
+
+      <div
+        className={`rounded-md ${isOwnMessage
+            ? 'bg-blue-600/40 text-white/90'
+            : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+          }`}
+      >
+        <div onClick={handleScrollToOriginal} className="flex cursor-pointer p-2">
+          <div className="w-1 h-5 bg-gray-400 dark:bg-gray-500 rounded-full flex-shrink-0 mr-2"></div>
+          <div className="flex flex-col">
+            <span className="font-medium text-xs">
+              {originalSenderName.length > 20 ? `${originalSenderName.slice(0, 20)}...` : originalSenderName}
+            </span>
+            <p className={`text-xs mt-0.5 line-clamp-2`}>
+              {originalText}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Reply message */}
+      <div className="text-sm whitespace-pre-wrap break-words">
+        {msg.text}
+      </div>
+    </div>
+  );
+};
+
 const MessageBody = ({
   isOwnMessage,
   msg,
-  onReply,
+  setIsReplyOpen,
   id,
   allMessages,
+  setReplyMessage
 }: {
   isOwnMessage: boolean;
   msg: any;
-  onReply: (message: any) => void;
   id: string
-  allMessages:any
+  allMessages: any,
+  setIsReplyOpen: (value: boolean) => void
+  setReplyMessage: (value: any) => void
 }) => {
   return (
     <div
@@ -302,12 +377,13 @@ const MessageBody = ({
           }`}
       >
         <div
+        id={`message-${msg.mesId}`}
           className={`relative flex justify-between items-center w-full max-w-[280px] md:max-w-[420px] ${isOwnMessage
             ? "bg-blue-500 text-white"
             : "bg-white dark:bg-transparent dark:text-white dark:border"
             }  rounded-xl shadow-sm`}
         >
-          <div className="w-[90%] px-4 py-3">
+          <div className="w-[90%] px-4 py-3 ">
 
             {msg.status === "deleted" ? (
               <p className="text-sm italic whitespace-pre-wrap break-words">
@@ -323,6 +399,10 @@ const MessageBody = ({
                 {msg.type === "document" && (
                   <ManageDocument msg={msg} isOwnMessage={isOwnMessage} />
                 )}
+                {msg.type === "reply" && (
+                  <ManageReply msg={msg} isOwnMessage={isOwnMessage} />
+                )}
+
               </>
             )}
           </div>
@@ -332,7 +412,9 @@ const MessageBody = ({
               isOwnMessage={isOwnMessage}
               msg={msg}
               id={id}
-              onReply={onReply}
+              setReplyMessage={setReplyMessage}
+              // onReply={onReply}
+              setIsReplyOpen={setIsReplyOpen}
               allMessages={allMessages}
             />
           </div>

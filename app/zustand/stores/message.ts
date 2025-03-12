@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-export type value = "image" | "video" | "gif" | "document" | "text";
+export type value = "image" | "video" | "gif" | "document" | "text" | "reply";
 
 interface MessageType {
     messageType: value;

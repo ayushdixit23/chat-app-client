@@ -21,6 +21,7 @@ import ErrorPage from "./ErrorPage";
 import InfiniteScroll from "react-infinite-scroll-component";
 import Preview from "./Preview";
 import InfiniteLoader from "./InfiniteLoader";
+import useFeatures from "@/app/zustand/stores/feature";
 
 const PrivateChat = ({ id }: { id: string }) => {
   const queryClient = useQueryClient();
@@ -37,7 +38,7 @@ const PrivateChat = ({ id }: { id: string }) => {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isFetching, setIsFetching] = useState(false);
   const [isUserInChat, setIsUserInChat] = useState(false);
-
+  const { setIsReplyOpen, setReplyMessage, replyMessage, isReplyOpen } = useFeatures((state) => state)
 
   const getLastMessageId = (messages: any) => {
     let oldestMessage: any = null;
@@ -133,7 +134,7 @@ const PrivateChat = ({ id }: { id: string }) => {
       seenBy: isGroup ? [] : isUserInChat ? [otherUser._id, user?.user.id] : [user?.user.id],
       isSeen: isGroup ? false : isUserInChat ? true : false,
 
-      type: messageType,
+      type: replyMessage ? "reply" : messageType,
       conversationId: id,
       ...(isGroup && {
         chatData: {
@@ -169,6 +170,14 @@ const PrivateChat = ({ id }: { id: string }) => {
         media && {
         videoUrl: URL.createObjectURL(media),
         uploadProgress: 0,
+      }),
+      ...(replyMessage && {
+        replyMessage: {
+          senderId: replyMessage.senderId,
+          mesId: replyMessage.mesId,
+          type: replyMessage.type,
+          text: replyMessage.text,
+        },
       }),
       ...(messageType === "document" &&
         media && {
@@ -292,10 +301,10 @@ const PrivateChat = ({ id }: { id: string }) => {
 
     socket.on("is-present-in-chat", (data) => {
       setIsUserInChat(data?.isPresent);
-    }); 
+    });
 
     socket.on("block-user-update", (data: any) => {
-      queryClient.invalidateQueries({queryKey:["getChat", data?.roomId]}); 
+      queryClient.invalidateQueries({ queryKey: ["getChat", data?.roomId] });
     });
 
     socket?.emit("join-room", id);
@@ -351,6 +360,14 @@ const PrivateChat = ({ id }: { id: string }) => {
       sendMediaMessage();
     } else if (messageType === "document") {
       sendDocumentMessage();
+    }
+
+    if (replyMessage) {
+      setReplyMessage(null)
+    }
+
+    if (isReplyOpen) {
+      setIsReplyOpen(false)
     }
   };
 
@@ -720,7 +737,6 @@ const PrivateChat = ({ id }: { id: string }) => {
       .flat()
       .map((msg: any) => msg.mesId);
 
-    console.log(messages, "messages")
     const payload = {
       messages,
       userId: user?.user.id,
@@ -769,7 +785,7 @@ const PrivateChat = ({ id }: { id: string }) => {
     });
     socket?.emit("block:user", { action: isBlockedByYou ? "unblock" : "block", roomId: id, userId: user?.user.id, actionType: "blockOrUnblock" });
   };
-  
+
   if (isLoading) return <Loader />;
   if (isError) return <ErrorPage message={error.message} />;
 
@@ -824,9 +840,12 @@ const PrivateChat = ({ id }: { id: string }) => {
 
                           return (
                             <MessageBody
+                              setIsReplyOpen={setIsReplyOpen}
+                              setReplyMessage={setReplyMessage}
+
                               key={index}
                               allMessages={data?.conversation.data?.conversation?.messages}
-                              onReply={() => { console.log(`reply`) }}
+
                               isOwnMessage={isOwnMessage}
                               msg={msg}
                               id={id}
@@ -847,6 +866,7 @@ const PrivateChat = ({ id }: { id: string }) => {
           setMedia={setMedia}
           setMessageType={setMessageType}
         />
+      
       </div>
 
       {/* Input */}
@@ -864,6 +884,7 @@ const PrivateChat = ({ id }: { id: string }) => {
         isGroup={data?.conversation.isGroup}
         userFullName={user?.user.fullName as string}
         senderId={user?.user.id as string}
+        
       />
     </div>
   );

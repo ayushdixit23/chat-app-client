@@ -17,7 +17,7 @@ const getLastMessageText = (lastMessage: any, user: any, currentUserId: string) 
       }This message is deleted`;
   }
 
-  if (lastMessage?.type === "text") {
+  if (lastMessage?.type === "text" || lastMessage?.type === "reply") {
     return lastMessage?.text
       ? `${lastMessage.sender?._id === currentUserId
         ? "You: "
@@ -112,7 +112,7 @@ const ListMiniComponent = ({
         </div>
 
         <div className="flex justify-between">
-          <p className={`${user.lastMessage?.status==="deleted" && "italic"} text-xs mt-[4px] dark:text-white text-gray-500 truncate`}>
+          <p className={`${user.lastMessage?.status === "deleted" && "italic"} text-xs mt-[4px] dark:text-white text-gray-500 truncate`}>
             {getLastMessageText(user.lastMessage, user, data.user.id)}
           </p>
 
