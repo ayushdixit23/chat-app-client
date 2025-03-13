@@ -1,9 +1,9 @@
-import { extractHourMinutes } from '@/app/utils/helper';
+import { clearUnReadMessages, extractHourMinutes } from '@/app/utils/helper';
 import Link from 'next/link';
 import React from 'react';
 
-const ListAllGroups = ({ group, data }: { group: any, data: any }) => {
-    const { _id, groupPic, groupName, lastMessage, unread } = group;
+const ListAllGroups = ({ group, data, queryClient }: { group: any, data: any, queryClient: any }) => {
+    const { _id, groupPic, groupName, lastMessage, unreadMessages } = group;
 
     // Function to format last message preview
     const renderLastMessage = () => {
@@ -28,7 +28,7 @@ const ListAllGroups = ({ group, data }: { group: any, data: any }) => {
     };
 
     return (
-        <Link href={`?id=${_id}`} className="flex items-center p-4 light:hover:bg-gray-50 cursor-pointer border-b light:border-gray-100">
+        <Link onClick={() => clearUnReadMessages(queryClient, _id)} href={`/?id=${_id}`} className="flex items-center p-4 light:hover:bg-gray-50 cursor-pointer border-b light:border-gray-100">
             {/* Group Profile Picture */}
             <div className="w-10 h-10 rounded-full overflow-hidden relative">
                 <img src={groupPic} alt={groupName} className="w-full h-full object-cover" />
@@ -49,9 +49,9 @@ const ListAllGroups = ({ group, data }: { group: any, data: any }) => {
                     <p className="text-xs mt-[4px] dark:text-white text-gray-500 truncate">
                         {renderLastMessage()}
                     </p>
-                    {unread > 0 && (
+                    {unreadMessages > 0 && (
                         <span className="bg-blue-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                            {unread}
+                            {unreadMessages}
                         </span>
                     )}
                 </div>

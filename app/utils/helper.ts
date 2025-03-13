@@ -109,3 +109,41 @@ export const updateChats = (oldData: any, data: any, key: string, user?: any, is
   }
   return { ...oldData, [key]: updatedChats };
 };
+
+export const clearUnReadMessages = async (queryClient:any,id: string) => {
+  queryClient.setQueryData(["allChats"], (oldData: any) => {
+    const dataChange = oldData?.users.map((d: any) => {
+      if (d._id === id) {
+        return {
+          ...d,
+          unreadMessages: 0
+        }
+      } else {
+        return { ...d }
+      }
+    })
+    return {
+      ...oldData,
+      users: dataChange
+    }
+  });
+
+  queryClient.setQueryData(["getGroups"], (oldData: any) => {
+    console.log(oldData,"older")
+    const dataChange = oldData?.groups.map((d: any) => {
+      if (d._id === id) {
+        return {
+          ...d,
+          unreadMessages: 0
+        }
+      } else {
+        return { ...d }
+      }
+    })
+    return {
+      ...oldData,
+      groups: dataChange
+    }
+  });
+
+}

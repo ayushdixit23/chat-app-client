@@ -8,7 +8,8 @@ import ListAllGroups from './ListIndividualGroups';
 import { useSession } from 'next-auth/react';
 import { useSocketContext } from '@/components/providers/socket';
 import useFeatures from '@/app/zustand/stores/feature';
-import { updateChats } from '@/app/utils/helper';
+import { formatDate, updateChats } from '@/app/utils/helper';
+import { useSearchParams } from 'next/navigation';
 
 const ListGroups = () => {
   const {
@@ -17,10 +18,14 @@ const ListGroups = () => {
     isLoading,
     error,
   } = useQuery({ queryKey: ["getGroups"], queryFn: getAllGroups });
-  const { data } = useSession()
+  const { data:userData } = useSession()
   const { socket } = useSocketContext()
   const queryClient = useQueryClient();
+  const searchParams = useSearchParams()
+  const searchParamsId = searchParams.get("id")
   const { setOnlineUsers } = useFeatures((state) => state)
+
+  console.log(chatData?.groups,"chatData.conversation")
 
   useEffect(() => {
     socket?.on("online-users", (data) => {
@@ -30,16 +35,36 @@ const ListGroups = () => {
     socket?.on("user-messages", (data) => {
       if (data?.isGroup) {
         queryClient.setQueryData(["getGroups"], (oldData: any) =>
-          updateChats(oldData, data, "groups")
+          updateChats(oldData, data, "groups",userData,data.conversationId===searchParamsId)
         );
       }
-    
+
       // Update individual chats (DMs)
       queryClient.setQueryData(["allChats"], (oldData: any) =>
-        updateChats(oldData, data, "users")
+        updateChats(oldData, data, "users",userData,data.conversationId===searchParamsId)
       );
+
+      if (searchParamsId !== data?.conversationId) {
+        queryClient.setQueryData(["getChat", data?.conversationId], (oldData: any) => {
+          if (!oldData) return oldData;
+          const formattedDate = formatDate(data.createdAt);
+          return {
+            ...oldData,
+            conversation: {
+              ...oldData.conversation,
+              messages: {
+                ...oldData.conversation.messages,
+                [formattedDate]: [
+                  ...(oldData?.conversation?.messages?.[formattedDate] || []),
+                  data,
+                ],
+              },
+            },
+          };
+        });
+      }
+
     });
-    
 
     return () => {
       socket?.off("online-users");
@@ -58,7 +83,7 @@ const ListGroups = () => {
   return (
     <div className="overflow-y-auto flex-1" id="listChatDiv">
       {chatData?.groups.map((group: any, index: number) => (
-        <ListAllGroups key={index} group={group} data={data} />
+        <ListAllGroups queryClient={queryClient} key={index} group={group} data={userData} />
       ))}
     </div>
 

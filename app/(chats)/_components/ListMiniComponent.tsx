@@ -1,4 +1,4 @@
-import { extractHourMinutes } from "@/app/utils/helper";
+import { clearUnReadMessages, extractHourMinutes } from "@/app/utils/helper";
 import Link from "next/link";
 import React from "react";
 
@@ -59,29 +59,10 @@ const ListMiniComponent = ({
   const otherUserId = otherUserArray[0]._id
   const isOnline = onlineUsers.includes(otherUserId) && !user.isGroup;
 
-  const clearUnReadMessages = async (id: string) => {
-    queryClient.setQueryData(["allChats"], (oldData: any) => {
-      const dataChange = oldData.users.map((d: any) => {
-        if (d._id === id) {
-          return {
-            ...d,
-            unreadMessages: 0
-          }
-        } else {
-          return { ...d }
-        }
-      })
-      return {
-        ...oldData,
-        users: dataChange
-      }
-    });
-  }
-
   return (
     <Link
       href={`?id=${user._id}`}
-      onClick={() => clearUnReadMessages(user._id)}
+      onClick={() => clearUnReadMessages(queryClient,user._id)}
       className="flex items-center p-4 light:hover:bg-gray-50 cursor-pointer border-b light:border-gray-100"
     >
       <div className="w-10 h-10 relative">
