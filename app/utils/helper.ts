@@ -66,9 +66,13 @@ export const extractHourMinutes = (isoString: string): string => {
   }
 };
 
-
-export const updateChats = (oldData: any, data: any, key: string, user?: any, isUserinChat?: boolean) => {
-
+export const updateChats = (
+  oldData: any,
+  data: any,
+  key: string,
+  user?: any,
+  isUserinChat?: boolean
+) => {
   if (!oldData) return oldData;
 
   const lastMessage = {
@@ -80,14 +84,23 @@ export const updateChats = (oldData: any, data: any, key: string, user?: any, is
 
   const isSeen = data.seenBy.includes(user?.user.id);
 
+  // Ensure oldData[key] is an array
+  const chats = Array.isArray(oldData[key]) ? oldData[key] : [];
+
   // Find existing chat
-  const existingChat = oldData[key]?.find((d: any) => d._id === data?.conversationId);
+  const existingChat = chats.find((d: any) => d._id === data?.conversationId);
 
   let updatedChats;
 
   if (existingChat) {
-    updatedChats = oldData[key].map((d: any) =>
-      d._id === data?.conversationId ? { ...d, lastMessage, unreadMessages: isSeen ? 0 : isUserinChat ? 0 : d.unreadMessages + 1 } : d
+    updatedChats = chats.map((d: any) =>
+      d._id === data?.conversationId
+        ? {
+            ...d,
+            lastMessage,
+            unreadMessages: isSeen ? 0 : isUserinChat ? 0 : d.unreadMessages + 1,
+          }
+        : d
     );
 
     // Move updated chat to the top
@@ -105,10 +118,12 @@ export const updateChats = (oldData: any, data: any, key: string, user?: any, is
       users: data?.users,
     };
 
-    updatedChats = [newChat, ...oldData[key]];
+    updatedChats = [newChat, ...chats];
   }
+
   return { ...oldData, [key]: updatedChats };
 };
+
 
 export const clearUnReadMessages = async (
   queryClient: any,
@@ -133,8 +148,7 @@ export const clearUnReadMessages = async (
   });
   if (isGroup) {
     queryClient.setQueryData(["getGroups"], (oldData: any) => {
-      console.log(oldData, "older")
-      const dataChange = oldData?.groups.map((d: any) => {
+      const dataChange = oldData?.groups?.map((d: any) => {
         if (d._id === id) {
           return {
             ...d,

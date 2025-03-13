@@ -148,13 +148,13 @@ const ManageImage = ({ msg }: { msg: any }) => (
 const ReadStatus = ({ isSeen }: { isSeen: boolean }) => {
   if (!isSeen) {
     // Single tick for sent but not seen
-    return <Check size={14} className="text-white" />;
+    return <Check size={14} className="dark:text-white" />;
   } else {
     // Double tick for seen messages
     return (
       <div className="flex">
-        <Check size={14} className="text-white" />
-        <Check size={14} className="text-white -ml-1" />
+        <Check size={14} className="dark:text-white" />
+        <Check size={14} className="dark:text-white -ml-1" />
       </div>
     );
   }

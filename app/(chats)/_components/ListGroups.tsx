@@ -25,8 +25,6 @@ const ListGroups = () => {
   const searchParamsId = searchParams.get("id")
   const { setOnlineUsers } = useFeatures((state) => state)
 
-  console.log(chatData?.groups,"chatData.conversation")
-
   useEffect(() => {
     socket?.on("online-users", (data) => {
       setOnlineUsers(data);
@@ -82,7 +80,7 @@ const ListGroups = () => {
 
   return (
     <div className="overflow-y-auto flex-1" id="listChatDiv">
-      {chatData?.groups.map((group: any, index: number) => (
+      {chatData?.groups?.map((group: any, index: number) => (
         <ListAllGroups queryClient={queryClient} key={index} group={group} data={userData} />
       ))}
     </div>

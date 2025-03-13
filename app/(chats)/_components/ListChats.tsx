@@ -26,8 +26,6 @@ const ListChats = ({ searchParamsId }: { searchParamsId: string }) => {
   const queryClient = useQueryClient();
   const { onlineUsers, setOnlineUsers } = useFeatures((state) => state)
 
-  console.log(chatData?.users)
-
   useEffect(() => {
     socket?.on("online-users", (data) => {
       setOnlineUsers(data);
