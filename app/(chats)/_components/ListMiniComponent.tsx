@@ -43,7 +43,6 @@ const getLastMessageText = (lastMessage: any, user: any, currentUserId: string) 
   return "";
 };
 
-
 const ListMiniComponent = ({
   user,
   data,
@@ -62,7 +61,7 @@ const ListMiniComponent = ({
   return (
     <Link
       href={`?id=${user._id}`}
-      onClick={() => clearUnReadMessages(queryClient,user._id)}
+      onClick={() => clearUnReadMessages(queryClient,user._id,user.isGroup)}
       className="flex items-center p-4 light:hover:bg-gray-50 cursor-pointer border-b light:border-gray-100"
     >
       <div className="w-10 h-10 relative">
