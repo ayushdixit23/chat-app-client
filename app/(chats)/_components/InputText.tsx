@@ -1,4 +1,4 @@
-import { Send, Lock, AlertTriangle, Smile, X } from "lucide-react";
+import { Send, Lock, Smile,X } from "lucide-react";
 import React, { useState } from "react";
 import { Socket } from "socket.io-client";
 import DropdownButton from "./DropdownButton";
@@ -69,7 +69,7 @@ const InputText = ({
   };
 
   const handleMessageWithTyping = () => {
-    if(isEmojiOpened){
+    if (isEmojiOpened) {
       setIsEmojiOpened(false)
     }
     socket?.emit("not-typing", {
@@ -84,7 +84,7 @@ const InputText = ({
 
   // Check if any blocking is happening
   const isBlocked = isBlockedByYou || isBlockedByUser;
-  
+
   // Determine blocking message
   const getBlockMessage = () => {
     if (isBlockedByYou && isBlockedByUser) {
@@ -119,7 +119,7 @@ const InputText = ({
               emojiButtonSize={36}
               previewConfig={{ showPreview: false }}
               // @ts-ignore
-              categories={["smileys_people","animals_nature","food_drink","activities","travel_places","objects","symbols"]} // Keep essential categories
+              categories={["smileys_people", "animals_nature", "food_drink", "activities", "travel_places", "objects", "symbols"]} // Keep essential categories
               autoFocusSearch={false}
               // @ts-ignore
               theme={theme}

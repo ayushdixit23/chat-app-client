@@ -63,7 +63,7 @@ const MessageOptions = ({
       <div onClick={() => setShowOptions(false)} className={`fixed inset-0 w-full h-full ${showOptions ? "z-10" : "-z-10"} `}>
 
       </div>
-      <div className="relative w-full flex z-10 justify-end items-end">
+      <div className="relative w-full flex justify-end items-end">
         <button
           onClick={toggleOptions}
           className={`p-1 rounded-full transition-all duration-200 ${isOwnMessage

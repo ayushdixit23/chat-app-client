@@ -39,6 +39,8 @@ const PrivateChat = ({ id }: { id: string }) => {
   const [isFetching, setIsFetching] = useState(false);
   const [isUserInChat, setIsUserInChat] = useState(false);
   const { setIsReplyOpen, setReplyMessage, replyMessage, isReplyOpen } = useFeatures((state) => state)
+  const groupUsers = data?.conversation.isGroup ? data.conversation.groupUsers?.filter((d: any) => d?._id !== user?.user.id).map((f: any) => f._id) : null
+  const [activeUsers, setActiveUsers] = useState([])
 
   const getLastMessageId = (messages: any) => {
     let oldestMessage: any = null;
@@ -115,6 +117,8 @@ const PrivateChat = ({ id }: { id: string }) => {
     }
   };
 
+  console.log(groupUsers, "groupusers", activeUsers, "activeUsers")
+
   const createMessage = (
     messageType: value,
     media?: File | null,
@@ -131,9 +135,20 @@ const PrivateChat = ({ id }: { id: string }) => {
         fullName: user?.user.fullName,
         profilePic: user?.user.profilePic,
       },
-      seenBy: isGroup ? [] : isUserInChat ? [otherUser._id, user?.user.id] : [user?.user.id],
-      isSeen: isGroup ? false : isUserInChat ? true : false,
 
+      seenBy: isGroup
+        ? [...new Set([...(activeUsers ?? []), user?.user.id])]
+        : isUserInChat
+          ? [otherUser._id, user?.user.id]
+          : [user?.user.id],
+
+      isSeen: isGroup
+        ? new Set([...(activeUsers ?? []), user?.user.id]).size === new Set(groupUsers).size &&
+        [...new Set([...(activeUsers ?? []), user?.user.id])].every(user => new Set(groupUsers).has(user))
+        : isUserInChat
+          ? true
+          : false
+      ,
       type: replyMessage ? "reply" : messageType,
       conversationId: id,
       ...(isGroup && {
@@ -244,7 +259,7 @@ const PrivateChat = ({ id }: { id: string }) => {
                   ? {
                     ...msg,
                     isSeen: true,
-                    seenBy: [...new Set([...msg.seenBy, user?.user.id])], // Ensure unique user IDs
+                    seenBy: [...new Set([...msg.seenBy, user?.user.id])],
                   }
                   : msg
               );
@@ -253,7 +268,6 @@ const PrivateChat = ({ id }: { id: string }) => {
           },
         };
       });
-
     })
 
     socket.on("message:deleted-update", (data) => {
@@ -300,8 +314,15 @@ const PrivateChat = ({ id }: { id: string }) => {
     })
 
     socket.on("is-present-in-chat", (data) => {
+      console.log(data)
       setIsUserInChat(data?.isPresent);
     });
+
+    socket.on(`is-present-in-group`, (data) => {
+      console.log(data)
+      setActiveUsers(data.users)
+    })
+
 
     socket.on("block-user-update", (data: any) => {
       queryClient.invalidateQueries({ queryKey: ["getChat", data?.roomId] });
@@ -324,7 +345,15 @@ const PrivateChat = ({ id }: { id: string }) => {
       socket.emit("messageToSeen", messageData);
     }
 
-    socket.emit("check-user-in-chat", { roomId: id, ...(!data?.conversation.isGroup && { userId: data?.conversation.otherUser._id, fullName: data?.conversation.otherUser.fullName }) })
+    if (!data.conversation.isGroup) {
+      socket.emit("check-user-in-chat", { roomId: id, ...(!data?.conversation.isGroup && { userId: data?.conversation.otherUser._id, fullName: data?.conversation.otherUser.fullName }) })
+    }
+
+    if (data.conversation.isGroup) {
+      socket.emit("check-users-for-group", {
+        roomId: id, userId: user?.user.id,
+      })
+    }
 
     // Cleanup listener on unmount
     return () => {
@@ -866,7 +895,7 @@ const PrivateChat = ({ id }: { id: string }) => {
           setMedia={setMedia}
           setMessageType={setMessageType}
         />
-      
+
       </div>
 
       {/* Input */}
@@ -884,7 +913,7 @@ const PrivateChat = ({ id }: { id: string }) => {
         isGroup={data?.conversation.isGroup}
         userFullName={user?.user.fullName as string}
         senderId={user?.user.id as string}
-        
+
       />
     </div>
   );

@@ -176,7 +176,7 @@ const DeleteMessageModal: React.FC<DeleteMessageModalProps> = ({
             animate={{ scale: 1, y: 0, opacity: 1 }}
             exit={{ scale: 0.95, y: 10, opacity: 0 }}
             transition={{ type: "spring", damping: 20, stiffness: 300 }}
-            className="bg-white dark:bg-background border rounded-xl shadow-2xl w-[400px] overflow-hidden"
+            className="bg-white dark:bg-black border z-50 rounded-xl shadow-2xl w-[400px] overflow-hidden"
           >
             {/* Header */}
             <div className="py-4 px-5  flex items-center justify-between">

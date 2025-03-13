@@ -3,6 +3,8 @@ import { Search, Users, MoreVertical, Trash2, Ban } from "lucide-react";
 import { Socket } from "socket.io-client";
 import useFeatures from "@/app/zustand/stores/feature";
 import { motion, AnimatePresence } from "framer-motion";
+import ClearChats from "./ClearChatModal";
+import BlockOrUnblockUser from "./BlockUserModal";
 
 interface MessageHeaderProps {
   data: any;
@@ -79,19 +81,19 @@ const MessageHeader: React.FC<MessageHeaderProps> = ({ data, socket, userId, cle
 
 
   // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = () => {
-      setShowDropdown(false);
-    };
+  // useEffect(() => {
+  //   const handleClickOutside = () => {
+  //     setShowDropdown(false);
+  //   };
 
-    if (showDropdown) {
-      document.addEventListener('click', handleClickOutside);
-    }
+  //   if (showDropdown) {
+  //     document.addEventListener('click', handleClickOutside);
+  //   }
 
-    return () => {
-      document.removeEventListener('click', handleClickOutside);
-    };
-  }, [showDropdown]);
+  //   return () => {
+  //     document.removeEventListener('click', handleClickOutside);
+  //   };
+  // }, [showDropdown]);
 
   // Animation variants
   const dropdownVariants = {
@@ -124,6 +126,8 @@ const MessageHeader: React.FC<MessageHeaderProps> = ({ data, socket, userId, cle
     rest: { scale: 1 },
     hover: { scale: 1.05 }
   };
+
+  const onCancel = () => { setShowDropdown(false) }
 
   return (
     <div className="p-4 bg-white dark:bg-[#0d0d0d] dark:text-white border-b light:border-gray-200">
@@ -228,7 +232,7 @@ const MessageHeader: React.FC<MessageHeaderProps> = ({ data, socket, userId, cle
                         >
                           <button
                             className="flex items-center w-full mt-1 px-4 py-2 text-sm text-gray-700 dark:text-gray-200"
-                            onClick={handleClearChat}
+                          // onClick={handleClearChat}
                           >
                             <motion.span
                               initial={{ x: -5, opacity: 0 }}
@@ -236,8 +240,10 @@ const MessageHeader: React.FC<MessageHeaderProps> = ({ data, socket, userId, cle
                               transition={{ delay: 0.1 }}
                               className="flex items-center"
                             >
-                              <Trash2 className="h-4 w-4 mr-2 text-gray-500 dark:text-gray-400" />
-                              Clear Chat
+                              <ClearChats
+                                onCancel={onCancel}
+                                onConfirm={handleClearChat}
+                              />
                             </motion.span>
                           </button>
                         </motion.li>
@@ -245,9 +251,8 @@ const MessageHeader: React.FC<MessageHeaderProps> = ({ data, socket, userId, cle
                           whileHover={{ backgroundColor: "rgba(0,0,0,0.05)" }}
                           whileTap={{ backgroundColor: "rgba(0,0,0,0.1)" }}
                         >
-                          {isBlockedByYou ? <button
+                          <button
                             className="flex items-center mb-1 w-full px-4 py-2 text-sm text-red-600 dark:text-red-400"
-                            onClick={handleBlockingUser}
                           >
                             <motion.span
                               initial={{ x: -5, opacity: 0 }}
@@ -255,23 +260,10 @@ const MessageHeader: React.FC<MessageHeaderProps> = ({ data, socket, userId, cle
                               transition={{ delay: 0.2 }}
                               className="flex items-center"
                             >
-                              <Ban className="h-4 w-4 mr-2" />
-                              UnBlock User
+                         
+                              <BlockOrUnblockUser blocked={isBlockedByYou} onCancel={onCancel} onConfirm={handleBlockingUser} />
                             </motion.span>
-                          </button> : <button
-                            className="flex items-center mb-1 w-full px-4 py-2 text-sm text-red-600 dark:text-red-400"
-                            onClick={handleBlockingUser}
-                          >
-                            <motion.span
-                              initial={{ x: -5, opacity: 0 }}
-                              animate={{ x: 0, opacity: 1 }}
-                              transition={{ delay: 0.2 }}
-                              className="flex items-center"
-                            >
-                              <Ban className="h-4 w-4 mr-2" />
-                              Block User
-                            </motion.span>
-                          </button>}
+                          </button>
                         </motion.li>}
                       </ul>
                     </motion.div>
