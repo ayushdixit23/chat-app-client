@@ -117,8 +117,6 @@ const PrivateChat = ({ id }: { id: string }) => {
     }
   };
 
-  console.log(groupUsers, "groupusers", activeUsers, "activeUsers")
-
   const createMessage = (
     messageType: value,
     media?: File | null,
@@ -135,20 +133,14 @@ const PrivateChat = ({ id }: { id: string }) => {
         fullName: user?.user.fullName,
         profilePic: user?.user.profilePic,
       },
-
       seenBy: isGroup
         ? [...new Set([...(activeUsers ?? []), user?.user.id])]
         : isUserInChat
           ? [otherUser._id, user?.user.id]
           : [user?.user.id],
-
       isSeen: isGroup
-        ? new Set([...(activeUsers ?? []), user?.user.id]).size === new Set(groupUsers).size &&
-        [...new Set([...(activeUsers ?? []), user?.user.id])].every(user => new Set(groupUsers).has(user))
-        : isUserInChat
-          ? true
-          : false
-      ,
+        ? [...groupUsers, user?.user.id].sort().join(",") === [...activeUsers, user?.user.id].sort().join(",")
+        : isUserInChat,
       type: replyMessage ? "reply" : messageType,
       conversationId: id,
       ...(isGroup && {
@@ -174,7 +166,7 @@ const PrivateChat = ({ id }: { id: string }) => {
         ],
       roomId: id,
       createdAt: new Date(),
-      receiverId: isGroup ? id : otherUser._id,
+      receiverId: isGroup ? groupUsers : otherUser._id,
       text: message,
       ...(messageType === "image" &&
         media && {
@@ -248,26 +240,52 @@ const PrivateChat = ({ id }: { id: string }) => {
 
       queryClient.setQueryData(["getChat", id], (oldData: any) => {
         if (!oldData) return oldData;
-
+        
         return {
           ...oldData,
           conversation: {
             ...oldData.conversation,
             messages: Object.keys(oldData.conversation.messages).reduce((acc: any, date) => {
-              acc[date] = oldData.conversation.messages[date].map((msg: any) =>
-                mesIdsToUpdate.includes(msg.mesId)
-                  ? {
+
+              acc[date] = oldData.conversation.messages[date].map((msg: any) => {
+      
+                if (mesIdsToUpdate.includes(msg.mesId)) {
+                  const updatedSeenBy = oldData?.conversation.isGroup
+                    ? [...new Set([...msg.seenBy, ...(activeUsers ?? []), user?.user.id])]
+                    : [...new Set([...msg.seenBy, user?.user.id])];
+      
+                  const isSeen = oldData?.conversation.isGroup
+                    ? updatedSeenBy.map(String).sort().join(",") === 
+                      (oldData?.conversation.groupUsers ?? []).map((f: any) => String(f._id)).sort().join(",")
+                    : true;
+      
+
+                    if (isSeen && msg.senderId._id !== user?.user.id) {
+                      socket.emit("messageSeenForGroup", {
+                        senderId: msg.senderId._id,  
+                        messageId: msg.mesId, 
+                        roomId: id, 
+                        seenBy: updatedSeenBy, 
+                      });
+                    }
+
+      
+                  return {
                     ...msg,
-                    isSeen: true,
-                    seenBy: [...new Set([...msg.seenBy, user?.user.id])],
-                  }
-                  : msg
-              );
+                    isSeen,
+                    seenBy: updatedSeenBy,
+                  };
+                }
+      
+                return msg;
+              });
+      
               return acc;
             }, {}),
           },
         };
       });
+      
     })
 
     socket.on("message:deleted-update", (data) => {
@@ -313,16 +331,53 @@ const PrivateChat = ({ id }: { id: string }) => {
 
     })
 
-    socket.on("is-present-in-chat", (data) => {
-      console.log(data)
-      setIsUserInChat(data?.isPresent);
-    });
+    if (!data.conversation.isGroup) {
+      socket.on("is-present-in-chat", (data) => {
+        if (data.roomId === id) {
+          setIsUserInChat(data?.isPresent);
+        }
+      });
+    }
 
-    socket.on(`is-present-in-group`, (data) => {
-      console.log(data)
-      setActiveUsers(data.users)
-    })
+    if (data.conversation.isGroup) {
+      socket.on(`get-users-for-group-without-me`, (data) => {
+        if (data?.userId === user?.user.id) {
+          setActiveUsers(data.users)
+        }
+      })
+    }
 
+    if (data.conversation.isGroup) {
+      socket.on("get-groupusers-update", (data) => {
+        if (data?.roomId === id) {
+          const otherUsers = data.users.filter((d: string) => d !== user?.user.id)
+          setActiveUsers(otherUsers)
+        }
+      })
+    }
+
+    socket.on("messageSeenForGroupUpdate", (data) => {
+      if (data.senderId === user?.user.id) {
+        queryClient.setQueryData(["getChat", data.roomId], (oldData: any) => {
+          if (!oldData) return oldData;
+    
+          return {
+            ...oldData,
+            conversation: {
+              ...oldData.conversation,
+              messages: Object.keys(oldData.conversation.messages).reduce((acc: any, date) => {
+                acc[date] = oldData.conversation.messages[date].map((msg: any) =>
+                  msg.mesId === data.messageId
+                    ? { ...msg, isSeen: true, seenBy: data.seenBy }
+                    : msg
+                );
+                return acc;
+              }, {}),
+            },
+          };
+        });
+      }
+    });    
 
     socket.on("block-user-update", (data: any) => {
       queryClient.invalidateQueries({ queryKey: ["getChat", data?.roomId] });
@@ -361,6 +416,9 @@ const PrivateChat = ({ id }: { id: string }) => {
       socket.off("is-present-in-chat");
       socket?.emit("leave-room", id);
       socket.off("join-room")
+      socket.off("messageSeenForGroupUpdate")
+      socket.off("messageSeenForGroup")
+      socket.off("mark-message-seen")
     };
   }, [socket, id, queryClient, data]);
 
@@ -378,6 +436,8 @@ const PrivateChat = ({ id }: { id: string }) => {
       console.error("Error sending text message:", error);
     }
   };
+
+  // console.log(groupUsers, "groupUsers", activeUsers, "activeUsers")
 
   const handleMessage = (
     message: string,
