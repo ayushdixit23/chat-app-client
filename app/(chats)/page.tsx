@@ -1,13 +1,13 @@
 import React from "react";
 import {
-  Search,
   Menu,
 } from "lucide-react";
 import PrivateChat from "./_components/PrivateChat";
 import ListChats from "./_components/ListChats";
 import NoChats from "./_components/NoChats";
+import ChatSearch from "./_components/ChatSearch";
 
-const Page =async ({
+const Page = async ({
   searchParams,
 }: {
   searchParams?: { id?: string;[key: string]: string | string[] | undefined };
@@ -27,23 +27,16 @@ const Page =async ({
               <Menu className="h-6 w-6" />
             </button>
           </div>
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Search chats..."
-              className="w-full p-2 pl-8 rounded-lg border light:border-gray-300 focus:outline-none light:focus:border-blue-500 dark:bg-transparent bg-gray-50"
-            />
-            <Search className="absolute left-2 top-2.5 h-5 w-5 text-gray-400" />
-          </div>
+          <ChatSearch />
         </div>
 
-        <ListChats searchParamsId={currSearchParams?.id as string}/>
+        <ListChats searchParamsId={currSearchParams?.id as string} />
       </div>
 
       {currSearchParams?.id ? (
         <PrivateChat id={currSearchParams?.id} />
       ) : (
-        <NoChats/>
+        <NoChats />
       )}
     </div>
   );

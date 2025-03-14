@@ -168,3 +168,7 @@ export const clearUnReadMessages = async (
 
 
 }
+
+export const escapeRegExp = (string: string) => {
+  return string.replace(/[.*+?^=!:${}()|\[\]\/\\]/g, '\\$&'); // Escape special characters
+};
