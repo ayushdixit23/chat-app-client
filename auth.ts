@@ -33,6 +33,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               email: res.data.user.email,
               fullName: res.data.user.fullName,
               userName: res.data.user.userName,
+              about: res.data.user.about,
               profilePic: res.data.user.profilePic,
               accessToken: res.data.token,
             };
@@ -87,6 +88,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             user.userName = res.data.user.userName;
             user.profilePic = res.data.user.profilePic;
             user.accessToken = res.data.token;
+            user.about = res.data.user.about
           }
         } catch (error) {
           console.error(
@@ -98,7 +100,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
       return true;
     },
-    async jwt({ token, user }: { token: any, user: any }) {
+    
+    // @ts-ignore
+    async jwt({ token, user, account, trigger, session }: { token: any, user: any, account: any, trigger: any, session: any }) {
       if (user) {
 
         token.id = user.id;
@@ -107,7 +111,35 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.userName = user.userName;
         token.profilePic = user.profilePic;
         token.accessToken = user.accessToken;
+        token.about = user.about;
       }
+
+      if (trigger == "update") {
+        if (session?.user?.email) {
+          token.email = session.user.email
+        }
+
+        if (session?.user?.about) {
+          token.about = session.user.about
+        }
+
+        if (session?.user?.about) {
+          token.about = session.user.about
+        }
+        if (session?.user?.userName) {
+          token.userName = session.user.userName
+        }
+
+        if (session?.user?.fullName) {
+          token.fullName = session.user.fullName
+        }
+
+        if (session?.user?.profilePic) {
+          token.profilePic = session.user.profilePic
+        }
+
+      }
+
       return token;
     },
 
@@ -119,6 +151,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       session.user.userName = token.userName;
       session.user.profilePic = token.profilePic;
       session.user.accessToken = token.accessToken;
+      session.user.about = token.about;
       return session;
     },
   },

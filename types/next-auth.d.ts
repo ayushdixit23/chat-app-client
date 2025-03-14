@@ -6,6 +6,7 @@ export type ExtendedUser = Omit<DefaultSession["user"], "name" | "image"> & {
   fullName: string
   userName: string
   profilePic: string
+  about:string
   accessToken: string
 }
 
@@ -26,6 +27,7 @@ declare module "next-auth/jwt" {
     userName: string
     profilePic: string
     accessToken: string
+    about:string
   }
 }
 
@@ -37,7 +39,8 @@ export type User = {
   userName: string
   profilePic: string
   email: string
-  bio: string
+  about: string
+  bio:string
   friends: string[]
   sentFriendRequests: string[]
 }
