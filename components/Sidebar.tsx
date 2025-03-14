@@ -14,7 +14,6 @@ const Sidebar = () => {
       <div className="flex flex-col space-y-[50px] flex-1 mt-16">
         <Link href={"/"}> <MessageSquare size={24} className="cursor-pointer" /></Link>
         <Link href={"/group"}> <Users size={24} className="cursor-pointer"/></Link>
-        <Link href={"/notifications"}>   <Bell size={24} className="cursor-pointer" /></Link>
         <Link href={"/requests"}> <UserPlus size={24} className="cursor-pointer" /></Link>
         <Link href={"/settings"}> <Settings size={24} className="cursor-pointer" /></Link>
       </div>
