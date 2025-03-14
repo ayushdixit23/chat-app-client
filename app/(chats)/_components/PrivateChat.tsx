@@ -543,6 +543,40 @@ const PrivateChat = ({ id }: { id: string }) => {
         users: updatedUsers,
       };
     });
+
+    queryClient.setQueryData(["getGroups"], (oldData: any) => {
+      if (!oldData) return oldData;
+
+      const lastMessage = {
+        type: messageToSend?.type,
+        text: messageToSend?.text,
+        sender: messageToSend?.senderId,
+        createdAt: messageToSend?.createdAt,
+      };
+
+      let updatedUsers = oldData?.groups.map((d: any) =>
+        d._id === messageToSend?.conversationId
+          ? { ...d, lastMessage: lastMessage }
+          : d
+      );
+
+      // Filter out the updated chat and move it to the top
+      const updatedChat = updatedUsers.find(
+        (d: any) => d._id === messageToSend?.conversationId
+      );
+      const filteredUsers = updatedUsers.filter(
+        (d: any) => d._id !== messageToSend?.conversationId
+      );
+
+      updatedUsers = updatedChat
+        ? [updatedChat, ...filteredUsers]
+        : updatedUsers;
+      return {
+        ...oldData,
+        groups: updatedUsers,
+      };
+    });
+
   };
 
   const sendMediaMessage = async () => {

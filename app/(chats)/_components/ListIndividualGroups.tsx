@@ -28,7 +28,7 @@ const ListAllGroups = ({ group, data, queryClient }: { group: any, data: any, qu
     };
 
     return (
-        <Link onClick={() => clearUnReadMessages(queryClient, _id,true)} href={`/?id=${_id}`} className="flex items-center p-4 light:hover:bg-gray-50 cursor-pointer border-b light:border-gray-100">
+        <Link onClick={() => clearUnReadMessages(queryClient, _id,true)} href={`?id=${_id}`} className="flex items-center p-4 light:hover:bg-gray-50 cursor-pointer border-b light:border-gray-100">
             {/* Group Profile Picture */}
             <div className="w-10 h-10 rounded-full overflow-hidden relative">
                 <img src={groupPic} alt={groupName} className="w-full h-full object-cover" />
