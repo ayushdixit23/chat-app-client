@@ -27,7 +27,21 @@ export const getFriendRequests = async () => {
                 "Authorization": `Bearer ${data?.user.accessToken}`
             }
         })
-        console.log(`data fetched friendRequet`, JSON.stringify(res.data))
+        return res.data
+    } catch (error) {
+        console.log(error)
+    }
+}
+
+export const getSendFriendRequests = async () => {
+    const data = await auth()
+    try {
+        const res = await axios.get(`${API}/chats/fetchSentFriendRequest`, {
+            headers: {
+                "Authorization": `Bearer ${data?.user.accessToken}`
+            }
+        })
+      
         return res.data
     } catch (error) {
         console.log(error)
