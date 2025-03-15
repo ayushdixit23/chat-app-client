@@ -14,6 +14,7 @@ import { useSocketContext } from "@/components/providers/socket";
 import useFeatures from "@/app/zustand/stores/feature";
 import { escapeRegExp, formatDate, updateChats } from "@/app/utils/helper";
 import useSearchStore from "@/app/zustand/stores/search";
+import Loader from "./Loader";
 
 const ListChats = ({ searchParamsId }: { searchParamsId: string }) => {
   const {
@@ -27,6 +28,66 @@ const ListChats = ({ searchParamsId }: { searchParamsId: string }) => {
   const queryClient = useQueryClient();
   const { onlineUsers, setOnlineUsers } = useFeatures((state) => state);
   const { searchText } = useSearchStore((state) => state);
+  const [debouncedSearch, setDebouncedSearch] = useState(searchText);
+  const [loading, setLoading] = useState(false)
+  const [tempUsers, setTempUsers] = useState([])
+
+  useEffect(() => {
+    setLoading(true)
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchText);
+    }, 1000);
+
+    return () => clearTimeout(handler);
+  }, [searchText]);
+
+  useEffect(() => {
+    if (!searchText.trim()) {
+      setTempUsers([]);
+  
+      queryClient.setQueryData(["allChats"], (oldData: any) => ({
+        ...oldData,
+        users: oldData?.users?.filter((user: any) => !tempUsers.some((tempUser: any) => tempUser._id === user._id)) || [],
+      }));
+    }
+  }, [searchText]);
+
+  useEffect(() => {
+    if (debouncedSearch) {
+      fetchResults(debouncedSearch);
+    }
+  }, [debouncedSearch]);
+
+  const fetchResults = async (query: string) => {
+    try {
+      const res = await axios.get(`${API}/chats/getChatsByQuery?query=${query}`, {
+        headers: {
+          Authorization: `Bearer ${userData?.user.accessToken}`
+        }
+      }
+      )
+
+
+      queryClient.setQueryData(["allChats"], (oldData: any) => {
+        const existingUsers = new Set(oldData?.users?.map((user: any) => user._id) || []);
+
+        // Filter out users that are already in the list
+        const newUsers = res.data.users.filter((user: any) => !existingUsers.has(user._id));
+        setTempUsers(newUsers)
+        return {
+          ...oldData,
+          users: [...(oldData?.users || []), ...newUsers],
+        };
+      });
+
+
+    } catch (error) {
+      console.error("Error fetching search results:", error);
+    } finally {
+      setLoading(false)
+    }
+  };
+
 
   useEffect(() => {
     socket?.on("online-users", (data) => {
@@ -145,9 +206,20 @@ const ListChats = ({ searchParamsId }: { searchParamsId: string }) => {
               />
             ))
           ) : (
-            <div className="w-full h-full flex justify-center items-center font-semibold text-xl">
-              No results found
-            </div>
+            <>
+              {
+                loading ?
+                  <div className="flex justify-center items-center h-full">
+                    <Loader />
+                  </div>
+                  :
+                  <div className="w-full h-full flex justify-center items-center font-semibold text-xl">
+                    No results found
+                  </div>
+              }
+
+            </>
+
           )}
         </>
       ) : (
