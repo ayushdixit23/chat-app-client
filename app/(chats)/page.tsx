@@ -4,11 +4,7 @@ import ListChats from "./_components/ListChats";
 import NoChats from "./_components/NoChats";
 import ChatSearch from "./_components/ChatSearch";
 
-const Page = async ({
-  searchParams,
-}: {
-  searchParams?: { id?: string;[key: string]: string | string[] | undefined };
-}) => {
+const Page = async ({ searchParams }: { searchParams: Promise<{ id: string | undefined }> }) => {
   const currSearchParams = await searchParams;
   return (
     <div className="flex w-full bg-gray-50 dark:bg-[#0d0d0d] dark:text-white">
@@ -22,7 +18,7 @@ const Page = async ({
             <h2 className="text-xl font-bold dark:text-white text-gray-800">
               Messages
             </h2>
-            
+
           </div>
           <ChatSearch />
         </div>

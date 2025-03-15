@@ -3,11 +3,8 @@ import NoChats from '../_components/NoChats'
 import PrivateChat from '../_components/PrivateChat'
 import GroupComponent from './_components/GroupComponent';
 
-const Page = async ({
-    searchParams,
-}: {
-    searchParams?: { id?: string;[key: string]: string | string[] | undefined };
-}) => {
+
+const Page = async ({ searchParams }: { searchParams: Promise<{ id: string | undefined }> }) => {
     const currSearchParams = await searchParams;
     return (
         <>

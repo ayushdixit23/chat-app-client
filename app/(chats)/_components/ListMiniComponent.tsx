@@ -93,7 +93,7 @@ const ListMiniComponent = ({
 
         <div className="flex justify-between">
           <p className={`${user.lastMessage?.status === "deleted" && "italic"} text-xs mt-[4px] dark:text-white text-gray-500 truncate`}>
-            {getLastMessageText(user.lastMessage, user, data.user.id)}
+            {getLastMessageText(user.lastMessage, user, data?.user?.id)}
           </p>
 
           {user?.unreadMessages > 0 && (
