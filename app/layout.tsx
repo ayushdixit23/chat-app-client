@@ -20,7 +20,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={` antialiased`}>
-        <NextTopLoader />
+        <NextTopLoader showSpinner={false}/>
         <NextAuthProvider>
           <SocketContextProvider>
             <ReactQueryProvider>
