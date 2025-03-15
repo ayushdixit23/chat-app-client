@@ -16,6 +16,10 @@ const ListAllGroups = ({ group, data, queryClient }: { group: any, data: any, qu
                 return lastMessage.text
                     ? `${senderPrefix}${lastMessage.text.length > 20 ? `${lastMessage.text.slice(0, 20)}...` : lastMessage.text}`
                     : `Start Conversation with ${groupName.slice(0, 5)}...`;
+            case "reply":
+                        return lastMessage.text
+                            ? `${senderPrefix}${lastMessage.text.length > 20 ? `${lastMessage.text.slice(0, 20)}...` : lastMessage.text}`
+                            : `Start Conversation with ${groupName.slice(0, 5)}...`;
             case "image":
                 return `${senderPrefix}sent an image`;
             case "video":

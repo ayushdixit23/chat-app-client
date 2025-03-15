@@ -21,6 +21,7 @@ import { API } from "@/app/utils/constants";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
 import { errorHandler } from "@/app/utils/helper";
+import { useRouter } from "next/navigation";
 
 // Define the form schema with Zod
 const formSchema = z.object({
@@ -45,6 +46,7 @@ export default function CreateGroupForm() {
   const queryClient = useQueryClient();
   const { data: authData } = useSession();
   const [loading, setLoading] = useState(false);
+  const router = useRouter()
 
   const mutation = useMutation({
     mutationFn: async (data: any) => {
@@ -64,7 +66,8 @@ export default function CreateGroupForm() {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["getGroups"] }); // Invalidate the cache
+      queryClient.invalidateQueries({ queryKey: ["getGroups"] });
+      queryClient.invalidateQueries({ queryKey: ["allChats"] });
     },
   });
 
@@ -91,6 +94,7 @@ export default function CreateGroupForm() {
     try {
       setLoading(true);
       mutation.mutate(data);
+      router.push(`/group`)
     } catch (error) {
       errorHandler(error);
     } finally {

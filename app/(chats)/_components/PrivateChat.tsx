@@ -240,7 +240,7 @@ const PrivateChat = ({ id }: { id: string }) => {
 
       queryClient.setQueryData(["getChat", id], (oldData: any) => {
         if (!oldData) return oldData;
-        
+
         return {
           ...oldData,
           conversation: {
@@ -248,44 +248,44 @@ const PrivateChat = ({ id }: { id: string }) => {
             messages: Object.keys(oldData.conversation.messages).reduce((acc: any, date) => {
 
               acc[date] = oldData.conversation.messages[date].map((msg: any) => {
-      
+
                 if (mesIdsToUpdate.includes(msg.mesId)) {
                   const updatedSeenBy = oldData?.conversation.isGroup
                     ? [...new Set([...msg.seenBy, ...(activeUsers ?? []), user?.user.id])]
                     : [...new Set([...msg.seenBy, user?.user.id])];
-      
+
                   const isSeen = oldData?.conversation.isGroup
-                    ? updatedSeenBy.map(String).sort().join(",") === 
-                      (oldData?.conversation.groupUsers ?? []).map((f: any) => String(f._id)).sort().join(",")
+                    ? updatedSeenBy.map(String).sort().join(",") ===
+                    (oldData?.conversation.groupUsers ?? []).map((f: any) => String(f._id)).sort().join(",")
                     : true;
-      
 
-                    if (isSeen && msg.senderId._id !== user?.user.id) {
-                      socket.emit("messageSeenForGroup", {
-                        senderId: msg.senderId._id,  
-                        messageId: msg.mesId, 
-                        roomId: id, 
-                        seenBy: updatedSeenBy, 
-                      });
-                    }
 
-      
+                  if (isSeen && msg.senderId._id !== user?.user.id) {
+                    socket.emit("messageSeenForGroup", {
+                      senderId: msg.senderId._id,
+                      messageId: msg.mesId,
+                      roomId: id,
+                      seenBy: updatedSeenBy,
+                    });
+                  }
+
+
                   return {
                     ...msg,
                     isSeen,
                     seenBy: updatedSeenBy,
                   };
                 }
-      
+
                 return msg;
               });
-      
+
               return acc;
             }, {}),
           },
         };
       });
-      
+
     })
 
     socket.on("message:deleted-update", (data) => {
@@ -360,7 +360,7 @@ const PrivateChat = ({ id }: { id: string }) => {
       if (data.senderId === user?.user.id) {
         queryClient.setQueryData(["getChat", data.roomId], (oldData: any) => {
           if (!oldData) return oldData;
-    
+
           return {
             ...oldData,
             conversation: {
@@ -377,7 +377,7 @@ const PrivateChat = ({ id }: { id: string }) => {
           };
         });
       }
-    });    
+    });
 
     socket.on("block-user-update", (data: any) => {
       queryClient.invalidateQueries({ queryKey: ["getChat", data?.roomId] });
@@ -554,17 +554,17 @@ const PrivateChat = ({ id }: { id: string }) => {
         createdAt: messageToSend?.createdAt,
       };
 
-      let updatedUsers = oldData?.groups.map((d: any) =>
+      let updatedUsers = oldData?.groups?.map((d: any) =>
         d._id === messageToSend?.conversationId
           ? { ...d, lastMessage: lastMessage }
           : d
       );
 
       // Filter out the updated chat and move it to the top
-      const updatedChat = updatedUsers.find(
+      const updatedChat = updatedUsers?.find(
         (d: any) => d._id === messageToSend?.conversationId
       );
-      const filteredUsers = updatedUsers.filter(
+      const filteredUsers = updatedUsers?.filter(
         (d: any) => d._id !== messageToSend?.conversationId
       );
 
@@ -916,10 +916,13 @@ const PrivateChat = ({ id }: { id: string }) => {
     <div className="flex flex-col flex-1 h-full">
       {/* Header */}
       <MessageHeader
+        id={id}
         clearChats={clearChats}
         blockOrUnBlockUser={blockOrUnBlockUser}
         data={data}
+        queryClient={queryClient}
         socket={socket}
+        accessToken={user?.user.accessToken as string}
         userId={user?.user.id as string}
       />
 

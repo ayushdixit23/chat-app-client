@@ -54,9 +54,9 @@ const ListMiniComponent = ({
   onlineUsers: string[];
   queryClient: any
 }) => {
-  const otherUserArray = user.users.filter((u: any) => u._id !== data.user.id)
-  const otherUserId = otherUserArray[0]._id
-  const isOnline = onlineUsers.includes(otherUserId) && !user.isGroup;
+  const otherUserArray = user?.users?.filter((u: any) => u._id !== data?.user?.id)
+  const otherUserId = otherUserArray[0]?._id
+  const isOnline = onlineUsers?.includes(otherUserId) && !user?.isGroup;
 
   return (
     <Link

@@ -43,12 +43,14 @@ const ListChats = ({ searchParamsId }: { searchParamsId: string }) => {
 
   useEffect(() => {
     if (!searchText.trim()) {
-      setTempUsers([]);
-  
-      queryClient.setQueryData(["allChats"], (oldData: any) => ({
-        ...oldData,
-        users: oldData?.users?.filter((user: any) => !tempUsers.some((tempUser: any) => tempUser._id === user._id)) || [],
-      }));
+      if (tempUsers.length > 0) {
+        setTempUsers([]);
+
+        queryClient.setQueryData(["allChats"], (oldData: any) => ({
+          ...oldData,
+          users: oldData?.users?.filter((user: any) => !tempUsers.some((tempUser: any) => tempUser._id === user._id)) || [],
+        }));
+      }
     }
   }, [searchText]);
 
@@ -231,7 +233,7 @@ const ListChats = ({ searchParamsId }: { searchParamsId: string }) => {
           scrollableTarget="listChatDiv"
           style={{ display: "flex", flexDirection: "column" }}
         >
-          {chatData?.users.length > 0 ? (
+          {chatData?.users?.length > 0 ? (
             chatData?.users?.map((user: any) => (
               <ListMiniComponent
                 user={user}

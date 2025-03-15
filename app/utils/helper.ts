@@ -131,7 +131,7 @@ export const clearUnReadMessages = async (
   isGroup: boolean = false 
 ) => {
   queryClient.setQueryData(["allChats"], (oldData: any) => {
-    const dataChange = oldData?.users.map((d: any) => {
+    const dataChange = oldData?.users?.map((d: any) => {
       if (d._id === id) {
         return {
           ...d,
@@ -171,4 +171,22 @@ export const clearUnReadMessages = async (
 
 export const escapeRegExp = (string: string) => {
   return string.replace(/[.*+?^=!:${}()|\[\]\/\\]/g, '\\$&'); // Escape special characters
+};
+
+export const formatDateTime = (dateString: string | Date) => {
+  const date = new Date(dateString);
+
+  const formattedDate = new Intl.DateTimeFormat("en-US", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+  }).format(date);
+
+  const formattedTime = new Intl.DateTimeFormat("en-US", {
+      hour: "numeric",
+      minute: "numeric",
+      hour12: true,
+  }).format(date);
+
+  return `${formattedDate} at ${formattedTime}`;
 };

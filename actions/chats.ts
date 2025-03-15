@@ -46,3 +46,17 @@ export const getAllGroups = async () => {
         console.log(error);
     }
 }
+
+export const getAddFriends = async (groupId: string) => {
+    const data = await auth();
+    try {
+        const res = await axios.get(`${API}/chats/fetch-add-friends/${groupId}`, {
+            headers: {
+                Authorization: `Bearer ${data?.user.accessToken}`,
+            },
+        });
+        return res.data;
+    } catch (error) {
+        console.log(error);
+    }
+}

@@ -14,7 +14,7 @@ import { API } from "@/app/utils/constants";
 import { useSession } from "next-auth/react";
 import Video from "@/components/Video";
 import { motion, AnimatePresence } from "framer-motion";
-import DeleteMessageModal from "./DeleteMessageModal";
+import DeleteMessageModal from "./modals/DeleteMessageModal";
 
 const MessageOptions = ({
   isOwnMessage,
