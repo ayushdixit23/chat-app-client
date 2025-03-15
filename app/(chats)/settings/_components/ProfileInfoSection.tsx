@@ -1,6 +1,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
-import {motion} from "motion/react"
+import { motion } from "motion/react"
+import Logout from "@/components/Logout";
 
 interface ProfileInfoSectionProps {
   user: any;
@@ -38,6 +39,8 @@ const ProfileInfoSection: React.FC<ProfileInfoSectionProps> = ({ user, startEdit
             Edit Profile
           </Button>
         </div>
+        <div className="sm:hidden"> <Logout /></div>
+
       </div>
     </motion.div>
   );

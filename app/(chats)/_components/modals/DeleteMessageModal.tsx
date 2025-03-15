@@ -176,7 +176,7 @@ const DeleteMessageModal: React.FC<DeleteMessageModalProps> = ({
             animate={{ scale: 1, y: 0, opacity: 1 }}
             exit={{ scale: 0.95, y: 10, opacity: 0 }}
             transition={{ type: "spring", damping: 20, stiffness: 300 }}
-            className="bg-white dark:bg-black border z-50 rounded-xl shadow-2xl w-[400px] overflow-hidden"
+            className="bg-white dark:bg-black border w-[90%] z-50 rounded-xl shadow-2xl sm:w-[400px] overflow-hidden"
           >
             {/* Header */}
             <div className="py-4 px-5  flex items-center justify-between">
@@ -217,7 +217,7 @@ const DeleteMessageModal: React.FC<DeleteMessageModalProps> = ({
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={onClose}
-                className="w-[20%] min-w-[145px] py-2 rounded-md bg-transparent font-medium  border border-gray-200 dark:border-gray-700 transition-colors duration-200 "
+                className="w-[20%] min-w-[145px] py-2 text-black dark:text-white rounded-md bg-transparent font-medium  border border-gray-200 dark:border-gray-700 transition-colors duration-200 "
               >
                 Cancel
               </motion.button>

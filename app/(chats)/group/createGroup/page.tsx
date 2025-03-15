@@ -1,10 +1,23 @@
-import React from 'react'
-import CreateGroup from '../../_components/CraeteGroup'
+import React from "react";
+import CreateGroup from "../../_components/CraeteGroup";
+import GroupComponent from "../_components/GroupComponent";
 
 const page = () => {
   return (
-   <CreateGroup/>
-  )
-}
+    <div className="flex bg-gray-50 w-full h-full justify-center items-center dark:bg-[#0d0d0d] dark:text-white">
+      <div className="sm:hidden block  h-full">
+        <GroupComponent hide={true} />
+      </div>
+      <div className="sm:block hidden h-full">
 
-export default page
+        <GroupComponent />
+      </div>
+      <div className="w-full h-full flex justify-center items-center">
+        <CreateGroup />
+      </div>
+
+    </div>
+  );
+};
+
+export default page;

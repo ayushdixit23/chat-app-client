@@ -75,8 +75,8 @@ export default function CreateGroupForm() {
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      groupName: "Mern Stack Developement Group",
-      description: "This group is for Mern stack related talks.",
+      groupName: "",
+      description: "",
       groupProfile: null,
     },
   });

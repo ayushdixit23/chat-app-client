@@ -43,8 +43,8 @@ const GroupDetailsModal = ({
         groupPic,
     } = groupData;
 
-    const createdByUsers = groupUsers.filter((d: Member) => d.isAdmin);
-    const createdBy = createdByUsers[0].fullName;
+    const createdByUsers = groupUsers?.filter((d: Member) => d.isAdmin);
+    const createdBy = createdByUsers[0]?.fullName;
 
     const modalVariants = {
         hidden: { opacity: 0, y: 20 },
@@ -87,7 +87,7 @@ const GroupDetailsModal = ({
                         onClick={onClose}
                     ></div>
                     <motion.div
-                        className="fixed right-0 bottom-0 top-0 transform bg-white dark:bg-[#1a1a1a] rounded-lg shadow-xl z-50 w-full max-w-md overflow-hidden"
+                        className="fixed right-0 bottom-0 top-0 transform bg-white dark:bg-[#1a1a1a] sm:rounded-lg shadow-xl z-50 w-full max-w-md overflow-hidden"
                         variants={modalVariants}
                         initial="hidden"
                         animate="visible"
@@ -305,15 +305,7 @@ const GroupDetailsModal = ({
                             )}
                         </div>
 
-                        {/* Footer */}
-                        {/* <div className="p-4 border-t dark:border-gray-700">
-                            <button
-                                className="w-full py-2 text-center rounded-lg bg-red-500 text-white font-medium"
-                                onClick={onClose}
-                            >
-                                Close
-                            </button>
-                        </div> */}
+                     
                     </motion.div>
                 </>
             )}

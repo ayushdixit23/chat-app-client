@@ -20,7 +20,7 @@ export default function ClearChats({ onCancel, onConfirm }: { onCancel: () => vo
           Clear Chat
         </span>
       </AlertDialogTrigger>
-      <AlertDialogContent>
+      <AlertDialogContent className="w-[92%]">
         <div className="flex flex-col gap-2 max-sm:items-center sm:flex-row sm:gap-4">
           <div
             className="flex size-9 shrink-0 items-center justify-center rounded-full border border-border"

@@ -362,7 +362,7 @@ const MessageBody = ({
     >
       {!isOwnMessage && (
         <div className="flex-shrink-0">
-          <div className="w-10 h-10 rounded-full overflow-hidden">
+          <div className="sm:w-10 sm:h-10 w-8 h-8 rounded-full overflow-hidden">
             <img
               src={msg.senderId.profilePic}
               alt={msg.senderId.fullName}
@@ -434,7 +434,7 @@ const MessageBody = ({
 
       {isOwnMessage && (
         <div className="flex-shrink-0">
-          <div className="w-10 h-10 rounded-full overflow-hidden ring-1 ring-gray-200 dark:ring-gray-700">
+          <div className="sm:w-10 sm:h-10 w-8 h-8 rounded-full overflow-hidden ring-1 ring-gray-200 dark:ring-gray-700">
             <img
               src={msg.senderId.profilePic}
               alt={msg.senderId.fullName}

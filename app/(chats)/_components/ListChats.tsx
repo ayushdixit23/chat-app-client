@@ -185,7 +185,7 @@ const ListChats = ({ searchParamsId }: { searchParamsId: string }) => {
   }
 
   return (
-    <div className="overflow-y-auto flex-1" id="listChatDiv">
+    <div className={` overflow-y-auto flex-1 `} id="listChatDiv">
       {searchText ? (
         <>
           {chatData?.users?.filter((user: any) => {

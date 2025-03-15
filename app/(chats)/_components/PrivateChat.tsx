@@ -913,7 +913,7 @@ const PrivateChat = ({ id }: { id: string }) => {
   if (isError) return <ErrorPage message={error.message} />;
 
   return (
-    <div className="flex flex-col flex-1 h-full">
+    <div className="flex flex-col w-full h-dvh sm:h-screen flex-1">
       {/* Header */}
       <MessageHeader
         id={id}
@@ -926,7 +926,7 @@ const PrivateChat = ({ id }: { id: string }) => {
         userId={user?.user.id as string}
       />
 
-      <div className="flex-1 w-full overflow-y-auto">
+      <div className="flex-1 w-full h-full flex flex-col overflow-y-auto">
         {messageType === "text" && (
           <div
             id="individualChats"
@@ -950,7 +950,7 @@ const PrivateChat = ({ id }: { id: string }) => {
               scrollableTarget="individualChats"
             >
               <div style={{ height: 20 }}></div>
-              <div className=" p-4 flex flex-col space-y-3">
+              <div className="p-2 sm:p-4 flex flex-col space-y-3">
                 {Object.keys(data?.conversation?.messages || {}).map(
                   (date, dateIndex) => (
                     <div key={dateIndex} className="flex flex-col space-y-4">

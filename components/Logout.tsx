@@ -16,10 +16,13 @@ export default function Logout() {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        {/* <Button variant="outline">Log Out</Button> */}
-        <LogOut size={24} className="cursor-pointer hover:text-red-500" />
+        <span className="flex justify-center items-center gap-2 bg-red-600 sm:bg-transparent p-1.5 text-white rounded-md -pl-2">
+          <LogOut size={20} className="cursor-pointer sm:hover:text-red-500" />
+          <span className="sm:hidden">Log Out</span>
+        </span>
+
       </AlertDialogTrigger>
-      <AlertDialogContent>
+      <AlertDialogContent className="w-[95%]">
         <div className="flex flex-col gap-2 max-sm:items-center sm:flex-row sm:gap-4">
           <div
             className="flex size-9 shrink-0 items-center justify-center rounded-full border border-border"

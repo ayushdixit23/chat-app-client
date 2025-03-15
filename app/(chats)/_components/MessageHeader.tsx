@@ -306,9 +306,9 @@ const MessageHeader: React.FC<MessageHeaderProps> = ({
             animate={{ x: 0, opacity: 1 }}
             transition={{ duration: 0.3, delay: 0.1 }}
           >
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="font-semibold dark:text-white text-gray-900">
+            <div className="flex items-center w-full justify-between">
+              <div className="w-full">
+                <h2 className="text-sm sm:text-base font-semibold dark:text-white text-gray-900">
                   {chatName}
                 </h2>
                 <motion.p

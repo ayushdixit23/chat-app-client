@@ -51,9 +51,9 @@ export default function AddMembersPopup({ groupId, userId, isOpen, onClose, onAd
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md p-6 bg-white dark:bg-[#0d0d0d] shadow-lg rounded-xl">
+      <DialogContent className="max-w-md p-4 sm:p-6 w-[90%] bg-white dark:bg-[#0d0d0d] shadow-lg rounded-xl">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold">Add Members</DialogTitle>
+          <DialogTitle className="text-xl text-start font-semibold">Add Members</DialogTitle>
         </DialogHeader>
 
         <div className="relative">
@@ -70,7 +70,7 @@ export default function AddMembersPopup({ groupId, userId, isOpen, onClose, onAd
           {filteredMembers.map((member: Member) => (
             <div
               key={member._id}
-              className="flex justify-between items-center p-2 border rounded-md cursor-pointer "
+              className="flex justify-between items-center p-1 sm:p-2 border rounded-md cursor-pointer "
               onClick={() => toggleMember(member)}
             >
               <div className="flex items-center p-2">
