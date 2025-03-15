@@ -33,19 +33,19 @@ const ChatInterface = () => {
         sentFriendRequestsQuery,
         friendRequestsQuery
     ] = [
-        useQuery({ 
-            queryKey: ["suggestion"], 
-            queryFn: fetchSuggestedUser 
-        }),
-        useQuery({
-            queryKey: ["sentfriendRequest"],
-            queryFn: getSendFriendRequests,
-        }),
-        useQuery({
-            queryKey: ["friendRequest"],
-            queryFn: getFriendRequests,
-        })
-    ];
+            useQuery({
+                queryKey: ["suggestion"],
+                queryFn: fetchSuggestedUser
+            }),
+            useQuery({
+                queryKey: ["sentfriendRequest"],
+                queryFn: getSendFriendRequests,
+            }),
+            useQuery({
+                queryKey: ["friendRequest"],
+                queryFn: getFriendRequests,
+            })
+        ];
 
     const suggestedUsers = suggestedUsersQuery.data;
     const sentFriendRequests = sentFriendRequestsQuery.data;
@@ -68,24 +68,24 @@ const ChatInterface = () => {
         onMutate: async (friendId) => {
             await queryClient.cancelQueries({ queryKey: ["suggestion"] });
             await queryClient.cancelQueries({ queryKey: ["sentfriendRequest"] });
-            
+
             // Get current data
             const previousSuggestions = queryClient.getQueryData(["suggestion"]);
             const previousSentRequests = queryClient.getQueryData(["sentfriendRequest"]);
-            
+
             // Optimistically update the suggestions list
             queryClient.setQueryData(["suggestion"], (old: any) => ({
                 ...old,
                 users: old.users.filter((user: User) => user._id.toString() !== friendId)
             }));
-            
+
             // Optimistically update sent requests
             queryClient.setQueryData(["sentfriendRequest"], (old: any) => {
                 // Find the user from suggestions to add to sent requests
                 const user = suggestedUsers?.users.find((u: User) => u._id.toString() === friendId);
-                
+
                 if (!old || !user) return old;
-                
+
                 return {
                     ...old,
                     requests: [
@@ -98,7 +98,7 @@ const ChatInterface = () => {
                     ]
                 };
             });
-            
+
             // Return previous values for rollback
             return { previousSuggestions, previousSentRequests };
         },
@@ -138,20 +138,20 @@ const ChatInterface = () => {
             // Cancel outgoing refetches
             await queryClient.cancelQueries({ queryKey: ["friendRequest"] });
             await queryClient.cancelQueries({ queryKey: ["allChats"] });
-            
+
             // Snapshot the current value
             const previousFriendRequests = queryClient.getQueryData(["friendRequest"]);
-            
+
             // Optimistically update friend requests
             queryClient.setQueryData(["friendRequest"], (old: any) => {
                 if (!old) return old;
-                
+
                 return {
                     ...old,
                     requests: old.requests.filter((request: RequestProps) => request._id !== friendRequestId)
                 };
             });
-            
+
             // Return previous value for rollback
             return { previousFriendRequests };
         },
@@ -170,9 +170,26 @@ const ChatInterface = () => {
         }
     });
 
-    const isLoading = suggestedUsersQuery.isLoading || 
-                     sentFriendRequestsQuery.isLoading || 
-                     friendRequestsQuery.isLoading;
+    const cancelFriendRequest = async (requestId: string) => {
+        try {
+            console.log(requestId)
+            const res = await axios.post(`${API}/chats/cancel-request-user-itself/${requestId}`, {}, {
+                headers: {
+                    Authorization: `Bearer ${userData?.user.accessToken}`
+                }
+            })
+            if (res.data.success) {
+                toast.success(res.data.message)
+                queryClient.invalidateQueries({ queryKey: ["sentfriendRequest"] });
+            }
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+    const isLoading = suggestedUsersQuery.isLoading ||
+        sentFriendRequestsQuery.isLoading ||
+        friendRequestsQuery.isLoading;
 
     if (isLoading) {
         return <Loader />;
@@ -215,9 +232,9 @@ const ChatInterface = () => {
                                     </div>
                                     <div className="flex items-center space-x-2">
                                         <button
-                                            onClick={() => respondFriendRequestMutation.mutate({ 
-                                                friendRequestId: request._id, 
-                                                action: "rejected" 
+                                            onClick={() => respondFriendRequestMutation.mutate({
+                                                friendRequestId: request._id,
+                                                action: "rejected"
                                             })}
                                             className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                                             disabled={respondFriendRequestMutation.isPending}
@@ -225,9 +242,9 @@ const ChatInterface = () => {
                                             <X className="h-5 w-5" />
                                         </button>
                                         <button
-                                            onClick={() => respondFriendRequestMutation.mutate({ 
-                                                friendRequestId: request._id, 
-                                                action: "accepted" 
+                                            onClick={() => respondFriendRequestMutation.mutate({
+                                                friendRequestId: request._id,
+                                                action: "accepted"
                                             })}
                                             className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
                                             disabled={respondFriendRequestMutation.isPending}
@@ -272,13 +289,16 @@ const ChatInterface = () => {
                                             </p>
                                         </div>
                                     </div>
-                                    <div className={`p-2 px-5 text-white rounded-xl text-xs ${
-                                        request?.status === "rejected" ? "bg-red-700" : 
-                                        request?.status === "accepted" ? "bg-green-500" : 
-                                        "bg-yellow-500"
-                                    }`}>
-                                        {request?.status}
+                                    <div className="flex justify-center text-xs  items-center gap-2">
+                                        {request?.status === "pending" && <div onClick={() => cancelFriendRequest(request._id)} className="border p-2 px-5 rounded-xl cursor-pointer">Cancel Request</div>}
+                                        <div className={`p-2 px-5 text-white rounded-xl ${request?.status === "rejected" ? "bg-red-700" :
+                                            request?.status === "accepted" ? "bg-green-500" :
+                                                "bg-yellow-500"
+                                            }`}>
+                                            {request?.status}
+                                        </div>
                                     </div>
+
                                 </div>
                             ))}
                         </div>
