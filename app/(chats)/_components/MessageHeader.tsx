@@ -159,6 +159,12 @@ const MessageHeader: React.FC<MessageHeaderProps> = ({
 
   const onAddMembers = async (members: string[]) => {
     try {
+
+      if (members.length <= 0) {
+        toast.error("Select at least 1 member!")
+        return
+      }
+
       const res = await axios.post(
         `${API}/chats/add-members/${id}`,
         { members },
@@ -178,7 +184,7 @@ const MessageHeader: React.FC<MessageHeaderProps> = ({
     } catch (error) {
       errorHandler(error);
     }
-    finally{
+    finally {
       onClose()
     }
   };

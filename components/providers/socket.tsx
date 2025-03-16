@@ -1,4 +1,5 @@
 "use client";
+import { SOCKET_URL } from "@/app/utils/constants";
 import { useSession } from "next-auth/react";
 import React, {
     createContext,
@@ -37,7 +38,7 @@ export const SocketContextProvider: React.FC<SocketContextProviderProps> = ({
 
     useEffect(() => {
         if (data?.user.accessToken) {
-            const url = `http://localhost:8082`;
+            const url = SOCKET_URL;
             // const url = "http://localhost:7003"
             const newSocket: Socket | null = io(url, {
                 auth: { token: data?.user.accessToken }, // Pass authentication info
