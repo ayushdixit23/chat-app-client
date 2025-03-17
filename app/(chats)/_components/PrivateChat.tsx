@@ -437,7 +437,6 @@ const PrivateChat = ({ id }: { id: string }) => {
     }
   };
 
-  // console.log(groupUsers, "groupUsers", activeUsers, "activeUsers")
 
   const handleMessage = (
     message: string,
@@ -446,7 +445,7 @@ const PrivateChat = ({ id }: { id: string }) => {
     if (messageType === "text") {
       sendTextMessage(message, setMessage);
     } else if (["image", "video"].includes(messageType)) {
-      sendMediaMessage();
+      sendMediaMessage(message);
     } else if (messageType === "document") {
       sendDocumentMessage();
     }
@@ -579,11 +578,11 @@ const PrivateChat = ({ id }: { id: string }) => {
 
   };
 
-  const sendMediaMessage = async () => {
+  const sendMediaMessage = async (message: string) => {
     if (!media) return;
     setMessageType("text");
     try {
-      const { tempMessage, tempMessageId } = createMessage(messageType, media);
+      const { tempMessage, tempMessageId } = createMessage(messageType, media, message);
 
       // Add temp message to UI
       updateMessageCache(tempMessage);
@@ -913,7 +912,7 @@ const PrivateChat = ({ id }: { id: string }) => {
   if (isError) return <ErrorPage message={error.message} />;
 
   return (
-    <div className="flex flex-col w-full h-dvh sm:h-screen flex-1">
+    <div className="flex flex-col w-full h-dvh sm:h-auo flex-1">
       {/* Header */}
       <MessageHeader
         id={id}

@@ -1,12 +1,12 @@
 import React, { useRef, useState } from "react";
-import { Camera, Video, FileText, File, Plus, X } from "lucide-react";
-import useMessageStore, { value } from "@/app/zustand/stores/message";
+import { Camera, Video,  File, Plus, X } from "lucide-react";
+import useMessageStore from "@/app/zustand/stores/message";
 import { motion, AnimatePresence } from "motion/react";
 
 const options = [
   { label: "image", icon: Camera, accept: "image/*" },
   { label: "video", icon: Video, accept: "video/*" },
-  { label: "gif", icon: FileText, accept: "image/gif" },
+  // { label: "gif", icon: FileText, accept: "image/gif" },
   { label: "document", icon: File, accept: ".pdf,.doc,.docx,.txt,.zip" },
 ];
 
@@ -46,7 +46,7 @@ const DropdownButton = () => {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 10, scale: 0.95 }}
               transition={{ duration: 0.2, ease: "easeInOut" }}
-              className="absolute rounded-xl min-w-[170px] bg-white dark:bg-[#0d0d0d] p-2 border -top-[213px] shadow-lg"
+              className="absolute rounded-xl min-w-[170px] bg-white dark:bg-[#0d0d0d] p-2 border -top-[190px] shadow-lg"
             >
               {options.map(({ label, icon: Icon, accept }) => (
                 <button

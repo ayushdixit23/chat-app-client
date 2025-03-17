@@ -121,15 +121,15 @@ const MessageOptions = ({
 
 const ManageImage = ({ msg }: { msg: any }) => (
   <div className="space-y-2 w-full max-w-[350px]">
+    <>{console.log(msg)}</>
     {msg.uploadProgress !== undefined && msg.uploadProgress < 100 ? (
       <div className="relative rounded-md w-full aspect-video flex items-center justify-center">
         {/* Image Preview */}
         {msg.imageUrl && (
-          <img
-            src={msg.imageUrl}
-            alt="Uploading..."
-            className="w-full h-full object-cover rounded-md opacity-40 blur-sm"
-          />
+         <div className="relative flex flex-col gap-1">
+         <img src={msg.imageUrl} alt="Uploaded" className="w-full rounded-md" />
+         <p className="text-sm whitespace-pre-wrap break-words">{msg.text}</p>
+       </div>
         )}
         {/* Upload Progress */}
         <div className="absolute inset-0 flex flex-col items-center justify-center p-4">
@@ -138,8 +138,9 @@ const ManageImage = ({ msg }: { msg: any }) => (
       </div>
     ) : (
       // Display final uploaded image
-      <div className="relative">
+      <div className="relative flex flex-col gap-1">
         <img src={msg.imageUrl} alt="Uploaded" className="w-full rounded-md" />
+        <p className="text-sm whitespace-pre-wrap break-words">{msg.text}</p>
       </div>
     )}
   </div>
@@ -254,9 +255,12 @@ const ManageVideo = ({ msg }: { msg: any }) => (
       <div className="relative rounded-md w-full aspect-video flex items-center justify-center">
         {/* Video Preview */}
         {msg.videoUrl && (
-          <div className="w-[300px] h-[200px]">
-            <Video url={msg.videoUrl} />
-          </div>
+           <div className="relative flex flex-col gap-1 w-full">
+           <div className="w-[350px] h-full">
+             <Video url={msg.videoUrl} />
+           </div>
+           <p className="text-sm whitespace-pre-wrap break-words">{msg.text}</p>
+         </div>
         )}
         {/* Upload Progress */}
         <div className="absolute inset-0 flex flex-col items-center justify-center p-4">
@@ -265,10 +269,11 @@ const ManageVideo = ({ msg }: { msg: any }) => (
       </div>
     ) : (
       // Display final uploaded video
-      <div className="relative w-full">
+      <div className="relative flex flex-col gap-1 w-full">
         <div className="w-[350px] h-full">
           <Video url={msg.videoUrl} />
         </div>
+        <p className="text-sm whitespace-pre-wrap break-words">{msg.text}</p>
       </div>
     )}
   </div>
@@ -378,12 +383,12 @@ const MessageBody = ({
       >
         <div
         id={`message-${msg.mesId}`}
-          className={`relative flex justify-between items-center w-full max-w-[280px] md:max-w-[420px] ${isOwnMessage
+          className={`relative flex justify-between w-full max-w-[280px] md:max-w-[420px] ${isOwnMessage
             ? "bg-blue-500 text-white"
             : "bg-white dark:bg-transparent dark:text-white dark:border"
             }  rounded-xl shadow-sm`}
         >
-          <div className="w-[90%] px-4 py-3 ">
+          <div className="flex-1 px-4 py-3 ">
 
             {msg.status === "deleted" ? (
               <p className="text-sm italic whitespace-pre-wrap break-words">
@@ -407,7 +412,7 @@ const MessageBody = ({
             )}
           </div>
 
-          <div className="pr-1">
+          <div className="w-[10px] mt-2 ">
             <MessageOptions
               isOwnMessage={isOwnMessage}
               msg={msg}

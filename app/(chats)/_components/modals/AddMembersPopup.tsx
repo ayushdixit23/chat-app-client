@@ -27,14 +27,14 @@ export default function AddMembersPopup({ groupId, userId, isOpen, onClose, onAd
   const [search, setSearch] = useState("");
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
 
-  const { data, isLoading, isError, error } = useQuery({
+  const { data, isError, error } = useQuery({
     queryKey: ["getAddFriends", groupId],
     queryFn: ({ queryKey }) => getAddFriends(queryKey[1]),
     enabled: !!groupId,
   })
 
 
-  if (isLoading) return <Loader />;
+  // if (isLoading) return <Loader />;
   if (isError) return <ErrorPage message={error.message} />;
 
   const filteredMembers = data?.users?.filter((member: Member) =>
@@ -67,28 +67,28 @@ export default function AddMembersPopup({ groupId, userId, isOpen, onClose, onAd
           <Search className="absolute left-2 top-2.5 h-5 w-5 text-gray-400" />
         </div>
         <div className="flex flex-col gap-3 max-h-[270px] overflow-y-auto">
-          {filteredMembers.map((member: Member) => (
+          {filteredMembers?.map((member: Member) => (
             <div
-              key={member._id}
+              key={member?._id}
               className="flex justify-between items-center p-1 sm:p-2 border rounded-md cursor-pointer "
               onClick={() => toggleMember(member)}
             >
               <div className="flex items-center p-2">
                 <img
-                  src={member.profilePic}
-                  alt={member.fullName}
+                  src={member?.profilePic}
+                  alt={member?.fullName}
                   className="w-12 h-12 rounded-full object-cover"
                 />
                 <div className="ml-4">
                   <h3 className="font-medium dark:text-white text-gray-900">
-                    {member.fullName}
+                    {member?.fullName}
                   </h3>
                   <p className="text-sm dark:text-white text-gray-500">
-                    {member.userName}
+                    {member?.userName}
                   </p>
                 </div>
               </div>
-              {selectedMembers.includes(member._id) && <CheckCircle size={20} className="text-green-500 mr-2" />}
+              {selectedMembers.includes(member?._id) && <CheckCircle size={20} className="text-green-500 mr-2" />}
             </div>
           ))}
         </div>

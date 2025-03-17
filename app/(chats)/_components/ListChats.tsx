@@ -183,9 +183,10 @@ const ListChats = ({ searchParamsId }: { searchParamsId: string }) => {
   if (isError) {
     return <ErrorPage message={error.message} />;
   }
+  
 
   return (
-    <div className={` overflow-y-auto flex-1 `} id="listChatDiv">
+    <div className={`overflow-y-auto flex-1 `} id="listChatDiv">
       {searchText ? (
         <>
           {chatData?.users?.filter((user: any) => {
@@ -230,6 +231,7 @@ const ListChats = ({ searchParamsId }: { searchParamsId: string }) => {
           next={fetchMoreChats}
           hasMore={chatData?.hasMore}
           loader={<InfiniteLoader />}
+          className="h-[100%] w-full"
           scrollableTarget="listChatDiv"
           style={{ display: "flex", flexDirection: "column" }}
         >
@@ -244,7 +246,7 @@ const ListChats = ({ searchParamsId }: { searchParamsId: string }) => {
               />
             ))
           ) : (
-            <div className="w-full h-full flex justify-center items-center font-semibold text-xl">
+            <div className="w-full flex justify-center items-center h-[80vh] font-semibold text-xl">
               No Chats found
             </div>
           )}

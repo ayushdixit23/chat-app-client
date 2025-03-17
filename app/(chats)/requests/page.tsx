@@ -25,7 +25,7 @@ interface RequestProps {
 
 const Page = () => {
   const queryClient = useQueryClient();
-  const { data: userData } = useSession();
+   const { data: userData } = useSession();
 
   // Run all queries in parallel
   const [

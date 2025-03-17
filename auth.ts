@@ -20,7 +20,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       },
       authorize: async (credentials) => {
         const { email, password } = credentials;
-
+        
         try {
           const res = await axios.post(`${API}/auth/login`, {
             email,
