@@ -17,7 +17,7 @@ export default function Logout() {
     <AlertDialog>
       <AlertDialogTrigger asChild>
         <span className="flex justify-center items-center gap-2 bg-red-600 sm:bg-transparent p-1.5 dark:text-white rounded-md -pl-2">
-          <LogOut size={20} className="cursor-pointer sm:hover:text-red-500" />
+          <LogOut size={20} className="cursor-pointer text-white sm:text-black sm:hover:text-red-500" />
           <span className="sm:hidden text-white">Log Out</span>
         </span>
 
