@@ -14,7 +14,7 @@ const ReplyMessage = () => {
                 <div className="flex items-center">
                     <div className="w-1 h-4 bg-blue-500 mr-2 rounded-full"></div>
                     <p className="text-sm font-medium text-blue-600 dark:text-blue-400">
-                        {replyMessage.type === "text" && replyMessage.text }
+                        {(replyMessage.type === "text" || replyMessage.type === "reply") && replyMessage.text }
                         {replyMessage.type === "image" && "Image" }
                         {replyMessage.type === "video" && "Video" }
                         {replyMessage.type === "document" && "Document" }

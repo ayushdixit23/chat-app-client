@@ -117,7 +117,7 @@ const InputText = ({
           >
             <EmojiPicker
               width="100%"
-              height={300} // Reduced height for mobile
+              height={350} // Reduced height for mobile
               searchDisabled={false}
               emojiSize={24} // Smaller emojis
               emojiButtonSize={32} // Smaller buttons

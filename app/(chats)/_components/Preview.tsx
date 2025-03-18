@@ -24,7 +24,7 @@ const Preview = ({
 
   return (
     <>
-      {media && messageType !== "text" && (
+      {media && (messageType !== "text" || messageType !== "reply") && (
         <div className="border-t h-full">
           <div className="container h-full mx-auto p-4">
             <div className="relative rounded-lg h-full overflow-hidden p-4">

@@ -46,6 +46,9 @@ const MessageOptions = ({
     e.stopPropagation();
     // onReply(msg);
     setIsReplyOpen(true)
+
+    console.log(msg,"reply")
+
     setReplyMessage(msg)
     setShowOptions(false);
   };
